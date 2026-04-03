@@ -7,7 +7,7 @@ El sistema utiliza una **Arquitectura Medallón** en AWS S3 y un enfoque de extr
 
 ---
 
-##️ Arquitectura de Datos (Medallón)
+## Arquitectura de Datos (Medallón)
 
 El almacenamiento está estructurado en un bucket de Amazon S3 con las siguientes capas:
 
