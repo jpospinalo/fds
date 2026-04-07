@@ -9,12 +9,15 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from api.routers import documents, search, audit, convert
 
+API_PREFIX = "/api"
+
 app = FastAPI(
     title="RAG FDS/SGA API",
     description="API para consulta semántica y auditoría automática de Fichas de Datos de Seguridad",
     version="1.0.0",
-    docs_url="/docs",
-    redoc_url="/redoc",
+    docs_url=f"{API_PREFIX}/docs",
+    redoc_url=f"{API_PREFIX}/redoc",
+    openapi_url=f"{API_PREFIX}/openapi.json",
 )
 
 # CORS: permite llamadas desde el frontend Vite (localhost:5173)
@@ -26,13 +29,13 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-app.include_router(documents.router)
-app.include_router(search.router)
-app.include_router(audit.router)
-app.include_router(convert.router)
+app.include_router(documents.router, prefix=API_PREFIX)
+app.include_router(search.router, prefix=API_PREFIX)
+app.include_router(audit.router, prefix=API_PREFIX)
+app.include_router(convert.router, prefix=API_PREFIX)
 
 
-@app.get("/health", tags=["Estado"])
+@app.get(f"{API_PREFIX}/health", tags=["Estado"])
 def health():
     return {"status": "ok", "service": "RAG FDS API"}
 
