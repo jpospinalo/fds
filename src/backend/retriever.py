@@ -70,11 +70,11 @@ def buscar_contexto(
                 "metadatos": doc.metadata
             })
             
-        print(f" Se recuperaron {len(fragmentos_limpios)} fragmentos de alta relevancia.")
+        print(f"   Se recuperaron {len(fragmentos_limpios)} fragmentos de alta relevancia.")
         return fragmentos_limpios
         
     except Exception as e:
-        print(f" Error en el Retriever conectando a ChromaDB: {e}")
+        print(f"  Error en el Retriever conectando a ChromaDB: {e}")
         return []
 
 # ==========================================
