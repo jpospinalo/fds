@@ -85,8 +85,8 @@ def run_audit(doc_id: str, background_tasks: BackgroundTasks):
 
     def _run():
         try:
-            from evaluation.sga_auditor_judge import auditar_documento_completo
-            reporte_path = auditar_documento_completo(doc_id)
+            from evaluation.sga_auditor_judge import inspeccionar_documento_texto
+            reporte_path = inspeccionar_documento_texto(doc_id)
             with open(reporte_path, "r", encoding="utf-8") as f:
                 raw = f.read()
             resultado = _parse_audit_report(raw, doc_id)

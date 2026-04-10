@@ -1,0 +1,118 @@
+REPORTE DE AUDITORÍA SGA - Esmalte Uretano AR Comp. B
+==================================================
+
+--- SECCION_1 ---
+Item_1_0	Calidad_1_0	Item_1_1	Calidad_1_1	Item_1_2	Calidad_1_2	Item_1_3	Calidad_1_3	Item_1_4	Calidad_1_4	Item_1_5	Calidad_1_5
+No_Presente	NO_Conf	Presente	Confiable	Presente	Confiable	Presente	Conf_CR	Presente	Confiable	Presente	Confiable
+
+--- SECCION_10 ---
+Orden	Aspecto	Atributo 1	Atributo 2	Atributo 3	Calificación	Código	Observaciones
+10.0	Presencia sección	Sí	—	—	5	Confiable	El título es correcto según el SGA.
+10.1	Reactividad	Sí	—	—	5	Confiable	Describe la reactividad basándose en la ausencia de datos de ensayo.
+10.2	Estabilidad química	Sí	No	No	3	Conf_CR	Indica estabilidad, pero omite condiciones de almacenamiento/manipulación y estabilizantes.
+10.3	Reacciones peligrosas	Sí	Sí	—	5	Confiable	Indica posibilidad y condiciones de ocurrencia.
+10.4	Condiciones a evitar	Sí	—	—	5	Confiable	Identifica fuentes de ignición.
+10.5	Materiales incompatibles	Sí	—	—	5	Confiable	Identifica sustancias específicas incompatibles.
+10.6	Productos de descomposición	Sí	—	—	5	Confiable	Identifica la no formación de productos peligrosos.
+
+--- SECCION_11 ---
+Orden	Aspecto	Atributo 1	Atributo 2	Atributo 3	Calificación	Código	Observaciones
+11.0	Presencia sección	No	—	—	1	NO_Conf	No se identifica el título de la sección en el texto proporcionado.
+11.1	Efectos toxicológicos	Sí	No	—	3	Conf_CR	Se identifican datos de toxicidad aguda pero faltan otras categorías SGA o declaración de ausencia de datos.
+11.2	Vías de exposición	Sí	No	No	3	Conf_CR	Se identifican vías (oral, inhalación, cutánea) pero no se describen los efectos asociados ni se indica ausencia de datos.
+11.3	Síntomas	No	No	—	1	NO_Conf	No se describen efectos adversos ni síntomas asociados a la exposición.
+11.4	Efectos inmediatos/crónicos	No	No	No	1	NO_Conf	No se identifica información sobre efectos inmediatos, retardados o crónicos.
+11.5	Medidas numéricas	Sí	Sí	No	3	Conf_CR	Se identifican medidas numéricas y condiciones, pero no se menciona la ausencia de datos para otros parámetros.
+
+--- SECCION_12 ---
+Orden	Aspecto	Atributo 1	Atributo 2	Atributo 3	Calificación	Código	Observaciones
+12.0	Presencia sección	No	—	—	1	NO_Conf	No se identifica el título de la sección 12.
+12.1	Toxicidad	No	No	—	1	NO_Conf	No se identifica información sobre toxicidad ni declaración de ausencia de datos.
+12.2	Persistencia	No	No	—	1	NO_Conf	No se identifica información sobre persistencia ni declaración de ausencia de datos.
+12.3	Bioacumulación	No	No	—	1	NO_Conf	No se identifica información sobre bioacumulación ni declaración de ausencia de datos.
+12.4	Movilidad	No	No	—	1	NO_Conf	No se identifica información sobre movilidad ni declaración de ausencia de datos.
+12.5	Otros efectos	Sí	Sí	—	5	Confiable	Se menciona explícitamente que no existe ningún dato disponible para el producto.
+
+--- SECCION_13 ---
+Orden	Aspecto	Atributo 1	Atributo 2	Atributo 3	Calificación	Código	Observaciones
+13.0	Presencia sección	No	—	—	1	NO_Conf	El texto proporcionado no incluye el título de la sección.
+13.1	Tratamiento de residuos	Sí	Sí	Sí	5	Confiable	Se identifican métodos, recomendaciones ambientales y tratamiento de envases contaminados.
+
+--- SECCION_14 ---
+Orden	Aspecto	Atributo 1	Atributo 2	Atributo 3	Calificación	Código	Observaciones
+14.0	Presencia sección	Sí	—	—	5	Confiable	Título presente y conforme al SGA.
+14.1	Número ONU	Sí	Sí	—	5	Confiable	Número ONU identificado y correcto.
+14.2	Nombre transporte	Sí	Sí	—	5	Confiable	Designación oficial identificada y correcta.
+14.3	Clase peligro	Sí	Sí	—	5	Confiable	Clase 9 identificada para todos los modos.
+14.4	Grupo embalaje	Sí	Sí	—	5	Confiable	Grupo III identificado y correcto.
+14.5	Peligro ambiental	Sí	Sí	—	5	Confiable	Peligrosidad ambiental identificada mediante pictograma.
+14.6	Precauciones	Sí	—	—	5	Confiable	Se identifican precauciones (EmS).
+14.7	Transporte granel	Sí	Sí	—	5	Confiable	Se indica explícitamente que no aplica/no disponible.
+
+--- SECCION_15 ---
+Orden	Aspecto	Atributo 1	Atributo 2	Atributo 3	Calificación	Código	Observaciones
+15.0	Presencia sección	Sí	—	—	5	Confiable	El título coincide con lo establecido en el SGA.
+15.1	Reglamentación	Sí	Sí	Sí	5	Confiable	Se identifican normativas de seguridad, salud y medio ambiente, coherentes con el contexto (UE y Colombia) y con información específica.
+
+--- SECCION_16 ---
+Orden	Aspecto	Atributo 1	Atributo 2	Atributo 3	Calificación	Código	Observaciones
+16.0	Presencia sección	No	—	—	1	NO_Conf	El título "Sección 16. Otra información" no está presente en el texto proporcionado.
+16.1	Información adicional	Sí	No	Sí	3	Conf_CR	Se incluyen abreviaturas y cambios, pero no se incluye la fecha de elaboración o revisión.
+
+--- SECCION_2 ---
+Item_2_0	Calidad_2_0	Item_2_1	Calidad_2_1	Item_2_2_1	Calidad_2_2_1	Item_2_2_2	Calidad_2_2_2	Item_2_2_3	Calidad_2_2_3	Item_2_2_4	Calidad_2_2_4	Item_2_3	Calidad_2_3
+1	NO_Conf	3	Conf_CR	5	Confiable	5	Confiable	5	Confiable	5	Confiable	5	Confiable
+
+--- SECCION_3 ---
+Orden	Aspecto	Atributo 1	Atributo 2	Atributo 3	Calificación	Código	Observaciones
+3.0	Presencia sección	Sí	—	—	5	Confiable	El título de la sección no fue explícitamente transcrito en el texto, pero se evalúa la estructura de la información.
+3.1.1	Identidad química de la sustancia	No	—	—	1	NO_Conf	El producto es una mezcla, no aplica.
+3.1.1.1	Nombres comunes o sinónimos de la sustancia	No	—	—	1	NO_Conf	El producto es una mezcla, no aplica.
+3.1.1.2	Número CAS y otros identificadores únicos de la sustancia	No	No corresponde	—	1	NO_Conf	El producto es una mezcla, no aplica.
+3.1.1.3	Impurezas, aditivos o estabilizadores presentes en la sustancia	No	—	—	1	NO_Conf	El producto es una mezcla, no aplica.
+3.2.1	Identidad química de la mezcla	Sí	—	—	5	Confiable	Se identifica la mezcla como Poliisocianato alifático.
+3.2.1.1	Nombres comunes o sinónimos de la mezcla	No	—	—	1	NO_Conf	No se proporcionan nombres comunes o sinónimos adicionales.
+3.2.1.2	Número CAS y otros identificadores únicos de la mezcla	Sí	Sí	—	5	Confiable	Se identifican los números CAS de los componentes de la mezcla.
+3.2.1.3	Concentración o gamas de concentraciones de todos los componentes de la mezcla	Sí	—	—	5	Confiable	Se presentan los rangos de concentración para los componentes reportados.
+
+--- SECCION_4 ---
+Orden	Aspecto	Atributo 1	Atributo 2	Atributo 3	Calificación	Código	Observaciones
+4.0	Presencia sección	Sí	—	—	5	Confiable	El título es correcto según el SGA.
+4.1	Primeros auxilios por vía de exposición	Sí	Sí	Sí	5	Confiable	Se describen medidas para inhalación, piel, ojos e ingestión.
+4.2	Síntomas y efectos	Sí	No	—	3	Conf_CR	Se describen síntomas agudos, pero no se especifican efectos retardados.
+4.3	Atención médica	Sí	No	—	3	Conf_CR	Se indica atención médica, pero no se especifican tratamientos especiales o antídotos.
+
+--- SECCION_5 ---
+Orden	Aspecto	Atributo 1	Atributo 2	Atributo 3	Calificación	Código	Observaciones
+5.0	Presencia sección	No	—	—	1	NO_Conf	No se identifica el título de la sección en el texto proporcionado.
+5.1	Medios de extinción	Sí	Sí	—	5	Confiable	Se indican medios adecuados y se especifica que no se conocen inadecuados.
+5.2	Peligros específicos	No	No	—	1	NO_Conf	No se describen peligros específicos ni productos de combustión peligrosos.
+5.3	Recomendaciones personal	Sí	No	—	3	Conf_CR	Se describe el equipo de protección, pero no se detallan procedimientos especiales de intervención.
+
+--- SECCION_6 ---
+Orden	Aspecto	Atributo 1	Atributo 2	Atributo 3	Calificación	Código	Observaciones
+6.0	Presencia sección	No	—	—	1	NO_Conf	No se identifica el título de la sección en el texto proporcionado.
+6.1	Precauciones personales	Sí	Sí	Sí	5	Confiable	Se describen precauciones, equipos (referencia a sección 8) y procedimientos.
+6.2	Precauciones ambientales	Sí	Sí	—	5	Confiable	Se describen medidas para evitar contaminación y acciones de contención ambiental.
+6.3	Contención y limpieza	Sí	Sí	—	5	Confiable	Se describen métodos de contención y métodos de limpieza.
+
+--- SECCION_7 ---
+Orden	Aspecto	Atributo 1	Atributo 2	Atributo 3	Calificación	Código	Observaciones
+7.0	Presencia sección	Sí	—	—	5	Confiable	El título no está explícito en el texto, pero se evalúa la sección.
+7.1	Manipulación segura	Sí	Sí	Sí	5	Confiable	Se incluyen medidas de higiene, condiciones operativas y EPP.
+7.2	Almacenamiento	Sí	Sí	Sí	5	Confiable	Se incluyen condiciones ambientales, técnicas e incompatibilidades.
+7.3	Usos específicos	No	No	—	1	NO_Conf	No se identifican usos específicos finales ni restricciones de uso.
+
+--- SECCION_8 ---
+| Orden | Aspecto | Atributo 1 | Atributo 2 | Atributo 3 | Calificación | Código | Observaciones |
+|---|---|---|---|---|---|---|---|
+| 8.0 | Presencia sección | Sí | — | — | 5 | Confiable | El título es conforme al SGA. |
+| 8.1 | Parámetros de control | Sí | Sí | Sí | 5 | Confiable | Identifica límites, asocia a componente y menciona fuente (ACGIH). |
+| 8.2 | Controles técnicos | Sí | — | — | 5 | Confiable | Se menciona ventilación de escape adecuada. |
+| 8.3 | EPP | Sí | Sí | Sí | 5 | Confiable | Se identifican protección ocular, cutánea y respiratoria. |
+
+--- SECCION_9 ---
+Orden	Aspecto	Atributo 1	Atributo 2	Atributo 3	Calificación	Código	Observaciones
+9.0	Presencia sección	Sí	—	—	5	Confiable	El título de la sección no fue proporcionado en el texto, se asume la evaluación sobre el contenido.
+9.1	Propiedades físico-químicas	Sí	No	Sí	3	Conf_CR	No se reportan las 19 propiedades específicas exigidas por el SGA (faltan algunas o se mezclan con datos no requeridos).
+

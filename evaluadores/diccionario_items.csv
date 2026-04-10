@@ -1,0 +1,76 @@
+id,seccion,descripcion
+1_0,Identificación del producto,Título de sección
+1_1,Identificación del producto,Identificador SGA del producto
+1_2,Identificación del producto,Otros medios de identificación
+1_3,Identificación del producto,Uso recomendado del producto químico y restricciones de uso
+1_4,Identificación del producto,Datos del proveedor
+1_5,Identificación del producto,Número de teléfono para emergencias
+2_0,Identificación del peligro o peligros,Título de sección
+2_1,Identificación del peligro o peligros,Clasificación  SGA  de  la  sustancia/mezcla  y  cualquier  información nacional o regional
+2_1_1,Identificación del peligro o peligros,Elementos de la etiqueta SGA: Pictogramas
+2_1_2,Identificación del peligro o peligros,Elementos de la etiqueta SGA: Palabra de Advertencia
+2_1_3,Identificación del peligro o peligros,Elementos de la etiqueta SGA: Indicaciones de Peligro
+2_1_4,Identificación del peligro o peligros,Elementos de la etiqueta SGA Consejos de Prudencia
+2_2,Identificación del peligro o peligros,"Otros peligros que no figuren en la clasificación (por ejemplo, peligro de explosión de partículas de polvo) o que no están cubiertos por el SGA"
+3_0,Composición/información sobre los componentes,Título de sección
+3_1_1,Composición/información sobre los componentes,Identidad química de la sustancia
+3_1_1_1,Composición/información sobre los componentes,Nombres comunes o sinónimos de la sustancia
+3_1_1_2,Composición/información sobre los componentes,Número CAS y otros identificadores únicos de la sustancia
+3_1_1_3,Composición/información sobre los componentes,"Impurezas, aditivos o estabilizadores presentes en la sustancia"
+3_2_1,Composición/información sobre los componentes,Identidad química de la sustancia
+3_2_1_1,Composición/información sobre los componentes,Nombres comunes o sinónimos de la mezcla
+3_2_1_2,Composición/información sobre los componentes,Número CAS y otros identificadores únicos de la mezcla
+3_2_1_3,Composición/información sobre los componentes,Concentración o gamas de concentraciones de todos los componentes de la mezcla
+4_0,Primeros auxilios,Título de sección
+4_1,Primeros auxilios,"Descripción de las medidas necesarias, desglosadas con arreglo a las diferentes vías de exposición, esto es, inhalación, contacto cutáneo y ocular e ingestión"
+4_2,Primeros auxilios,"Síntomas/efectos más importantes, agudos y retardados"
+4_3,Primeros auxilios,Indicación de la necesidad de recibir atención médica inmediata y tratamiento especial requerido en caso necesario
+5_0,Medidas de lucha contra incendios,Título de sección
+5_1,Medidas de lucha contra incendios,Medios adecuados (o no adecuados) de extinción
+5_2,Medidas de lucha contra incendios,Peligros específicos del producto químico
+5_3,Medidas de lucha contra incendios,Medidas especiales que deben tomar los equipos de lucha contra incendios
+6_0,Medidas que deben tomarse en caso de vertido accidental,Título de sección
+6_1,Medidas que deben tomarse en caso de vertido accidental,"Precauciones individuales, equipos de protección y procedimientos de emergencia"
+6_2,Medidas que deben tomarse en caso de vertido accidental,Precauciones relativas al medio ambiente
+6_3,Medidas que deben tomarse en caso de vertido accidental,Métodos y materiales para la contención y limpieza de vertidos
+7_0,Manipulación y almacenamiento,Título de sección
+7_1,Manipulación y almacenamiento,Precauciones que se deben tomar para garantizar una manipulación segura
+7_2,Manipulación y almacenamiento,"Condiciones   de   almacenamiento   seguro,   incluidas   cualesquiera incompatibilidades"
+8_0,Controles de exposición/protección personal,Título de sección
+8_1,Controles de exposición/protección personal,Parámetros  de  control:  límites  o  valores  de  corte  de  exposición ocupacionales o biológicos
+8_2,Controles de exposición/protección personal,Controles técnicos apropiados
+8_3,Controles de exposición/protección personal,"Medidas  de  protección  individual,  como  equipos  de  protección personal"
+9_0,Propiedades físicas y químicas,Título de sección
+9_1,Propiedades físicas y químicas,Propiedades fisicas y químicas
+10_0,Estabilidad y reactividad,Título de sección
+10_1,Estabilidad y reactividad,Reactividad
+10_2,Estabilidad y reactividad,Estabilidad química
+10_3,Estabilidad y reactividad,Posibilidad de reacciones peligrosas
+10_4,Estabilidad y reactividad,Condiciones que deben evitarse
+10_5,Estabilidad y reactividad,Materiales incompatibles
+10_6,Estabilidad y reactividad,Productos de descomposición peligrosos
+11_0,Información toxicológica,Título de sección
+11_1,Información toxicológica,Efectos toxicológicos
+11_2,Información toxicológica,Información sobre las posibles vías de exposición
+11_3,Información toxicológica,"Síntomas relacionados con las características físicas, químicas y toxicológicas"
+11_4,Información toxicológica,Efectos inmediatos y retardados así como efectos crónicos producidos por una exposición a corto y largo plazo
+11_5,Información toxicológica,Medidas numéricas de toxicidad (tales como estimaciones de toxicidad aguda)
+12_0,Información ecotoxicológica,Título de sección
+12_1,Información ecotoxicológica,Toxicidad
+12_2,Información ecotoxicológica,Persistencia y degradabilidad
+12_3,Información ecotoxicológica,Potencial de bioacumulación
+12_4,Información ecotoxicológica,Movilidad en el suelo
+12_5,Información ecotoxicológica,Otros efectos adversos
+13_0,Información relativa a la eliminación de los productos,Título de sección
+13_1,Información relativa a la eliminación de los productos,Métodos de eliminación
+14_0,Información relativa al transporte,Título de sección
+14_1,Información relativa al transporte,Número ONU
+14_2,Información relativa al transporte,Designación oficial de transporte de las Naciones Unidas
+14_3,Información relativa al transporte,Clase(s) relativas al transporte
+14_4,Información relativa al transporte,Grupo de embalaje/envasado si se aplica
+14_5,Información relativa al transporte,Riesgos ambientales
+14_6,Información relativa al transporte,Precauciones especiales para el usuario
+15_0,Información sobre la reglamentación,Título de sección
+15_1,Información sobre la reglamentación,"Disposiciones específicas sobre seguridad, salud y medio ambiente para el producto de que se trate"
+16_0,Otras informaciones,Título de sección
+16_1,Otras informaciones,Otras informaciones

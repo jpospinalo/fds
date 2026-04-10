@@ -3,7 +3,7 @@
 # Archivo: evaluation/sga_auditor_judge.py
 # ==========================================
 import os
-import re
+import time
 import pandas as pd
 from pathlib import Path
 from langchain_google_genai import ChatGoogleGenerativeAI
@@ -16,9 +16,9 @@ from src.backend.retriever import buscar_contexto
 # ==========================================
 # 1. CONFIGURACIÓN DEL JUEZ (LLM)
 # ==========================================
-def obtener_llm_juez():
+def obtener_llm_inspector():
     """Inicializa a Gemini en modo estricto (Temperatura 0) para evitar alucinaciones."""
-    print("⚖️  Inicializando Juez Auditor (Gemini 2.5 Flash)...")
+    print(" Inicializando Juez Auditor (Gemini 2.5 Flash)...")
     return ChatGoogleGenerativeAI(
         model="gemini-3.1-flash-lite-preview", 
         temperature=0, 
@@ -26,109 +26,117 @@ def obtener_llm_juez():
     )
 
 # Plantilla estricta para forzar la salida tabular
-PROMPT_AUDITOR = PromptTemplate.from_template(
-    """Eres un Auditor Experto en Seguridad Química (SGA). 
-    Tu tarea es evaluar la Sección {num_seccion} de una Ficha de Datos de Seguridad (FDS) utilizando ESTRICTAMENTE el siguiente instrumento normativo.
+PROMPT_INSPECTOR = PromptTemplate.from_template(
+    """Eres un Analista de Extracción de Datos de Seguridad Química (SGA). 
+    Tu única tarea es verificar la PRESENCIA o AUSENCIA de la información requerida en la Sección {num_seccion} de una Ficha de Datos de Seguridad (FDS).
 
-    INSTRUMENTO DE EVALUACIÓN (RÚBRICA):
+    LISTA DE REQUERIMIENTOS A VERIFICAR:
     {rubrica}
 
     TEXTO EXTRAÍDO DE LA FDS DEL USUARIO:
     {texto_fds}
 
     INSTRUCCIONES CRÍTICAS:
-    1. Lee cuidadosamente el texto de la FDS.
-    2. Aplica las reglas del instrumento paso a paso para todos los ítems listados en la tabla del instrumento.
-    3. NO inventes información. Si un elemento de la rúbrica no está presente en el texto, evalúalo como 'NO_Conf'.
-    4. Tu salida debe ser ÚNICAMENTE el reporte en formato estructurado (TSV/Texto separado por tabulaciones) tal como lo pide la rúbrica. Sin saludos, sin explicaciones extra, y sin bloques de código Markdown (```).
+    1. Lee cuidadosamente el texto de la FDS recuperado.
+    2. Compara el texto con los ítems solicitados en la lista de requerimientos.
+    3. NO evalúes la calidad, exactitud o veracidad de la información. Tu única misión es detectar si el tema se menciona.
+    4. Tu salida debe ser ÚNICAMENTE una tabla en formato texto separado por tabulaciones (TSV).
+    5. Las columnas deben ser exactamente: "Ítem Solicitado" y "Estado (Presente / No Presente)".
+    6. Usa los mismos nombres de "Ítem Solicitado" que aparecen en la lista.
+    7. Sin saludos, sin explicaciones adicionales, y sin bloques de código Markdown (```).
     """
 )
 
 # ==========================================
 # 2. MOTOR DE AUDITORÍA AUTOMATIZADA
 # ==========================================
-def auditar_documento_completo(doc_id: str):
+def inspeccionar_documento_texto(doc_id: str):
     print(f"\n==================================================")
-    print(f" INICIANDO AUDITORÍA OFICIAL SGA: {doc_id}")
+    print(f" INICIANDO CHECKLIST SGA (SOLO TEXTO): {doc_id}")
     print(f"==================================================\n")
     
-    llm_juez = obtener_llm_juez()
-    cadena_auditoria = PROMPT_AUDITOR | llm_juez
+    # Secciones objetivo (Solo texto)
+    SECCIONES_OBJETIVO = [1, 3, 4, 5, 6]
     
-    # Aseguramos que exista la carpeta para guardar los reportes
+    llm_inspector = obtener_llm_inspector()
+    cadena_inspeccion = PROMPT_INSPECTOR | llm_inspector
+    
     reportes_dir = Config.DATA_DIR / "evaluation_reports"
     reportes_dir.mkdir(parents=True, exist_ok=True)
     
-    # Ruta a tu carpeta de evaluadores
-    ruta_rubricas = Config.ROOT_DIR / "evaluadores"
-    
-    if not ruta_rubricas.exists():
-        print(" Error: No se encontró la carpeta 'evaluadores/' con las rúbricas.")
+    # --- CAMBIO CORE: LEER EL DICCIONARIO CSV ---
+    # Asegúrate de que el CSV esté en la raíz de tu proyecto
+    ruta_diccionario = Config.ROOT_DIR / "evaluadores" / "diccionario_items.csv"
+    if not ruta_diccionario.exists():
+        print(f" Error: No se encontró el archivo '{ruta_diccionario}'.")
         return
-
+        
+    df_diccionario = pd.read_csv(ruta_diccionario)
     resultados_totales = {}
 
-    # Iterar sobre todos los archivos .md en la carpeta de evaluadores
-    archivos_rubricas = list(ruta_rubricas.glob("instrumento-secci[óo]n-*.md"))
-    archivos_rubricas.sort() # Para que evalúe en orden del 1 al 16
-
-    for archivo_rubrica in archivos_rubricas:
-        # Extraer el número de la sección del nombre del archivo (Ej: instrumento-sección-2.md -> 2)
-        match = re.search(r'secci[óo]n-(\d+)', archivo_rubrica.name, re.IGNORECASE)
-        if not match: continue
+    for num_seccion in SECCIONES_OBJETIVO:
+        print(f" Inspeccionando Sección {num_seccion}...")
         
-        num_seccion = int(match.group(1))
-        print(f" Evaluando Sección {num_seccion}...")
+        # Filtrar el CSV: Buscar IDs que empiecen por "N_" seguido de un número del 1 al 9 (ignora los "_0")
+        mascara_seccion = df_diccionario['id'].str.match(rf"^{num_seccion}_[1-9]") 
+        items_seccion = df_diccionario[mascara_seccion]
         
-        # 1. Leer la ley (Rúbrica)
-        with open(archivo_rubrica, 'r', encoding='utf-8') as f:
-            texto_rubrica = f.read()
+        if items_seccion.empty:
+            print(f"   No hay ítems en el diccionario para la Sección {num_seccion}.")
+            continue
             
-        # 2. Buscar la evidencia (Contexto en ChromaDB)
+        # Construir la lista dinámica de cosas que debe buscar el LLM
+        lista_requerimientos = "\n".join([f"- {row['descripcion']} (ID: {row['id']})" for _, row in items_seccion.iterrows()])
+        
         query_busqueda = f"Contenido de la sección {num_seccion}"
         fragmentos = buscar_contexto(query=query_busqueda, doc_id=doc_id, num_seccion=num_seccion, top_k=10)
         
         if not fragmentos:
-            print(f"  No hay datos en la base vectorial para la Sección {num_seccion}.")
+            print(f"   No hay datos en la base vectorial para la Sección {num_seccion}.")
             resultados_totales[f"Seccion_{num_seccion}"] = "ERROR: Sección no encontrada en la FDS."
             continue
             
         texto_evidencia = "\n\n".join([f['texto'] for f in fragmentos])
         
-        # 3. Emitir Veredicto (Inferencia LLM)
         try:
-            respuesta = cadena_auditoria.invoke({
+            print("   Esperando 10 segundos por límite de API...")
+            time.sleep(25)
+            
+            respuesta = cadena_inspeccion.invoke({
                 "num_seccion": num_seccion,
-                "rubrica": texto_rubrica,
+                "rubrica": lista_requerimientos,
                 "texto_fds": texto_evidencia
             })
             
-            veredicto = respuesta.content.strip()
-            resultados_totales[f"Seccion_{num_seccion}"] = veredicto
-            print(f"   Auditoría Sección {num_seccion} completada.")
+            # Manejo robusto de la salida
+            if isinstance(respuesta.content, list):
+                veredicto = "".join([bloque.get("text", "") for bloque in respuesta.content if isinstance(bloque, dict)])
+            else:
+                veredicto = str(respuesta.content)
+                
+            resultados_totales[f"Seccion_{num_seccion}"] = veredicto.strip()
+            print(f"   Checklist Sección {num_seccion} completado.")
             
         except Exception as e:
-            print(f"   Error al auditar Sección {num_seccion}: {e}")
-            resultados_totales[f"Seccion_{num_seccion}"] = "ERROR: Falló la evaluación del LLM."
+            print(f"   ERROR EXACTO en Sección {num_seccion}: {type(e).__name__} - {str(e)}")
+            resultados_totales[f"Seccion_{num_seccion}"] = "ERROR: Falló la inspección del LLM."
 
     # ==========================================
     # 3. GENERACIÓN DE REPORTE FINAL
     # ==========================================
-    ruta_reporte = reportes_dir / f"Auditoria_SGA_{doc_id}.txt"
+    ruta_reporte = reportes_dir / f"Checklist_SGA_{doc_id}.txt"
     with open(ruta_reporte, 'w', encoding='utf-8') as f:
-        f.write(f"REPORTE DE AUDITORÍA SGA - {doc_id}\n")
+        f.write(f"REPORTE DE CHECKLIST (PRESENCIA) SGA - {doc_id}\n")
         f.write("="*50 + "\n\n")
         for seccion, veredicto in resultados_totales.items():
-            f.write(f"--- {seccion.upper()} ---\n")
+            f.write(f"--- SECCIÓN {seccion.upper()} ---\n")
             f.write(f"{veredicto}\n\n")
             
-    print(f"\n AUDITORÍA FINALIZADA. Reporte guardado en: {ruta_reporte}")
+    print(f"\n INSPECCIÓN FINALIZADA. Reporte guardado en: {ruta_reporte}")
     return ruta_reporte
-
 # ==========================================
 # PUNTO DE ENTRADA (PRUEBA)
 # ==========================================
 if __name__ == "__main__":
-    # Pon aquí el nombre exacto de uno de tus documentos guardados en ChromaDB
     DOCUMENTO_PRUEBA = "FDS 22 - Esmalte Uretano AR Comp. B" 
-    auditar_documento_completo(DOCUMENTO_PRUEBA)
+    inspeccionar_documento_texto(DOCUMENTO_PRUEBA)
