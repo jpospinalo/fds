@@ -18,7 +18,7 @@ from src.backend.retriever import buscar_contexto
 # ==========================================
 def obtener_llm_inspector():
     """Inicializa a Gemini en modo estricto (Temperatura 0) para evitar alucinaciones."""
-    print(" Inicializando Juez Auditor (Gemini 2.5 Flash)...")
+    print(" Inicializando Juez Auditor (Gemini-3.1-flash)...")
     return ChatGoogleGenerativeAI(
         model="gemini-3.1-flash-lite-preview", 
         temperature=0, 
