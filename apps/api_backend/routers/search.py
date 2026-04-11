@@ -1,15 +1,16 @@
-import sys
 import os
+import sys
 from pathlib import Path
+
 from fastapi import APIRouter, HTTPException
 
-# Aseguramos que el path de src/ sea visible desde api/
-ROOT = Path(__file__).resolve().parents[2]
+from api_backend.schemas.models import SearchRequest, SearchResponse, SearchResult
+from api_backend.rag_engine.retriever import buscar_contexto
+
+# Asegurar acceso a api_backend
+ROOT = Path(__file__).resolve().parent.parent.parent
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
-
-from api.schemas.models import SearchRequest, SearchResponse, SearchResult
-from src.backend.retriever import buscar_contexto
 
 router = APIRouter(prefix="/search", tags=["Búsqueda semántica"])
 

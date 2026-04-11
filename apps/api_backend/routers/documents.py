@@ -1,8 +1,12 @@
+import json
 import os
-import boto3
-from fastapi import APIRouter, HTTPException
 from collections import defaultdict
+
+import boto3
 from dotenv import load_dotenv
+from fastapi import APIRouter, HTTPException
+
+from api_backend.config import Config
 
 load_dotenv()
 

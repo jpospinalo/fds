@@ -1,14 +1,21 @@
+import json
 import os
 import re
-import json
+import sys
 import time
+from pathlib import Path
 from typing import Optional
+
 from pydantic import BaseModel, Field
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_core.prompts import PromptTemplate
 
-# Importamos el Centro de Control
-from src.config import Config
+# Asegurar acceso a api_backend
+ROOT = Path(__file__).resolve().parent.parent
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
+
+from api_backend.config import Config
 
 # ==========================================
 # 1. CONFIGURACIÓN DEL LLM (TIER 2)

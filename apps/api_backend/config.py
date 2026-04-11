@@ -4,7 +4,7 @@ from dotenv import load_dotenv
 
 # Forzar la carga del .env desde la raíz del proyecto
 # Esto asegura que sin importar desde dónde ejecutes el script, encuentre las variables
-ROOT_DIR = Path(__file__).resolve().parent.parent
+ROOT_DIR = Path(__file__).parent.parent.parent
 load_dotenv(dotenv_path=ROOT_DIR / ".env", override=True)
 
 class Config:

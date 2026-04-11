@@ -1,12 +1,12 @@
-import os
 import json
+import os
+
 import boto3
 import chromadb
 from langchain_chroma import Chroma
 
-# Importamos nuestro Centro de Control y nuestro nuevo módulo de Embeddings
-from src.config import Config
-from src.backend.embeddings import obtener_modelo_embeddings
+from api_backend.config import Config
+from api_backend.rag_engine.embeddings import obtener_modelo_embeddings
 
 def obtener_cliente_s3():
     return boto3.client('s3', 

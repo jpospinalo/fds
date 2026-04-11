@@ -1,8 +1,8 @@
 import os
+
 from langchain_openai import AzureOpenAIEmbeddings
 
-# Importamos nuestro Centro de Control
-from src.config import Config
+from api_backend.config import Config
 
 def obtener_modelo_embeddings():
     """

@@ -1,11 +1,20 @@
+import json
 import os
+import sys
 import time
-import boto3
 from pathlib import Path
+
+import boto3
 from docling.document_converter import DocumentConverter, PdfFormatOption
 from docling.datamodel.base_models import InputFormat
 from docling.datamodel.pipeline_options import PdfPipelineOptions
-from src.config import Config
+
+# Asegurar acceso a api_backend
+ROOT = Path(__file__).resolve().parent.parent
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
+
+from api_backend.config import Config
 
 # ==========================================
 # 1. INICIALIZACIÓN DE SERVICIOS

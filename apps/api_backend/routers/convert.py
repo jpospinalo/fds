@@ -1,7 +1,9 @@
 import re
-from fastapi import APIRouter, UploadFile, File, HTTPException
+
+from fastapi import APIRouter, File, HTTPException, UploadFile
 from fastapi.responses import PlainTextResponse
-from api.schemas.models import ConvertRequest, ConvertResponse
+
+from api_backend.schemas.models import ConvertRequest, ConvertResponse
 
 router = APIRouter(prefix="/convert", tags=["Conversión"])
 

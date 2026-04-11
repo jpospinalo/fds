@@ -1,10 +1,9 @@
 import os
-from typing import List, Dict, Any, Optional
+from typing import Any, Dict, List, Optional
 
-# Importamos nuestra configuración y módulos del backend
-from src.config import Config
-from src.backend.embeddings import obtener_modelo_embeddings
-from src.backend.vectorstore import obtener_base_vectorial
+from api_backend.config import Config
+from api_backend.rag_engine.embeddings import obtener_modelo_embeddings
+from api_backend.rag_engine.vectorstore import obtener_base_vectorial
 
 def obtener_motor_busqueda():
     """

@@ -6,7 +6,7 @@ export default defineConfig({
   server: {
     host: "0.0.0.0",
     port: 5173,
-    allowedHosts: ["ec2-13-217-147-173.compute-1.amazonaws.com"],
+    allowedHosts: ["ec2-3-91-103-135.compute-1.amazonaws.com"],
     proxy: {
       // Opcional: proxy para evitar CORS en desarrollo
       "/api": {

@@ -1,17 +1,13 @@
-# ==========================================
-# RAG-AS-A-JUDGE: AUDITOR AUTOMÁTICO SGA
-# Archivo: evaluation/sga_auditor_judge.py
-# ==========================================
 import os
 import time
-import pandas as pd
 from pathlib import Path
+
+import pandas as pd
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_core.prompts import PromptTemplate
 
-# Importamos nuestro Centro de Control y el Motor de Búsqueda
-from src.config import Config
-from src.backend.retriever import buscar_contexto
+from api_backend.config import Config
+from api_backend.rag_engine.retriever import buscar_contexto
 
 # ==========================================
 # 1. CONFIGURACIÓN DEL JUEZ (LLM)
@@ -66,7 +62,7 @@ def inspeccionar_documento_texto(doc_id: str):
     
     # --- CAMBIO CORE: LEER EL DICCIONARIO CSV ---
     # Asegúrate de que el CSV esté en la raíz de tu proyecto
-    ruta_diccionario = Config.ROOT_DIR / "evaluadores" / "diccionario_items.csv"
+    ruta_diccionario = Config.ROOT_DIR / "apps" /"api_backend" / "auditor" / "evaluadores" / "diccionario_items.csv"
     if not ruta_diccionario.exists():
         print(f" Error: No se encontró el archivo '{ruta_diccionario}'.")
         return

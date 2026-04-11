@@ -1,13 +1,15 @@
 import sys
 from pathlib import Path
 
-# Agregar raíz del proyecto al path para importar src/
-ROOT = Path(__file__).resolve().parent.parent
-sys.path.insert(0, str(ROOT))
-
+import uvicorn
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from api.routers import documents, search, audit, convert
+
+from api_backend.routers import documents, search, audit, convert
+
+# Agregar raíz del proyecto al path
+ROOT = Path(__file__).resolve().parent.parent
+sys.path.insert(0, str(ROOT))
 
 API_PREFIX = "/api"
 

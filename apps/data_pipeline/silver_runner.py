@@ -1,13 +1,19 @@
-import os
 import json
-import boto3
+import os
+import sys
 from pathlib import Path
 
-# Importamos nuestra configuración y herramientas
-from src.config import Config
-from src.ingest.sections_config import REGLAS_SECCIONES
-from src.ingest.extractors import procesar_seccion_texto
-# from src.ingest.vision_enricher import procesar_seccion_multimodal  <-- Lo importaremos cuando lo creemos
+import boto3
+
+# Asegurar acceso a api_backend
+ROOT = Path(__file__).resolve().parent.parent
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
+
+from api_backend.config import Config
+from .sections_config import REGLAS_SECCIONES
+from .extractors import procesar_seccion_texto
+# from .vision_enricher import procesar_seccion_multimodal  <-- Lo importaremos cuando lo creemos
 
 def obtener_cliente_s3():
     return boto3.client('s3', 

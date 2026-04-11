@@ -1,11 +1,17 @@
 import os
-import fitz  # PyMuPDF
-import boto3
-import google.generativeai as genai
+import sys
 from pathlib import Path
 
-# Importamos nuestro Centro de Control
-from src.config import Config
+import boto3
+import fitz
+import google.generativeai as genai
+
+# Asegurar acceso a api_backend
+ROOT = Path(__file__).resolve().parent.parent
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
+
+from api_backend.config import Config
 
 # ==========================================
 # 1. CONFIGURACIÓN DEL MODELO VISUAL (GEMMA 3)

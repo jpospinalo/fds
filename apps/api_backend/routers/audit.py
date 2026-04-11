@@ -1,20 +1,47 @@
-import sys
 import os
 import re
+import sys
 from pathlib import Path
-from fastapi import APIRouter, HTTPException, BackgroundTasks
 from typing import Dict
 
-ROOT = Path(__file__).resolve().parents[2]
+from fastapi import APIRouter, BackgroundTasks, HTTPException
+
+from api_backend.schemas.models import AuditRequest, AuditResponse, AuditItemResult, AuditSectionResult
+
+# Asegurar acceso a api_backend
+ROOT = Path(__file__).resolve().parent.parent.parent
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
-
-from api.schemas.models import AuditRequest, AuditResponse, AuditSectionResult, AuditItemResult
 
 router = APIRouter(prefix="/audit", tags=["Auditoría SGA"])
 
 # Caché en memoria (para demo; en producción usar Redis o DB)
 _audit_cache: Dict[str, dict] = {}
+
+
+def _generate_csv_report(secciones: list) -> str:
+    """
+    Genera un reporte CSV a partir de las secciones auditadas.
+    """
+    csv_lines = ["Sección,Ítem,Presencia,Calidad,Observaciones"]
+    
+    for sec in secciones:
+        for item in sec.items:
+            seccion = sec.seccion
+            item_name = item.item
+            presencia = item.presencia
+            calidad = item.calidad
+            observaciones = item.observaciones or ""
+            
+            # Escapar comillas en los valores
+            item_name = item_name.replace('"', '""')
+            observaciones = observaciones.replace('"', '""')
+            
+            csv_lines.append(
+                f'{seccion},"{item_name}","{presencia}","{calidad}","{observaciones}"'
+            )
+    
+    return "\n".join(csv_lines)
 
 
 def _parse_audit_report(raw_text: str, doc_id: str) -> AuditResponse:
@@ -64,11 +91,15 @@ def _parse_audit_report(raw_text: str, doc_id: str) -> AuditResponse:
         )
         i += 2
 
+    # Generar CSV
+    csv_report = _generate_csv_report(secciones)
+
     return AuditResponse(
         doc_id=doc_id,
         status="completed",
         secciones=secciones,
         reporte_txt=raw_text,
+        reporte_csv=csv_report,
     )
 
 
@@ -85,7 +116,7 @@ def run_audit(doc_id: str, background_tasks: BackgroundTasks):
 
     def _run():
         try:
-            from evaluation.sga_auditor_judge import inspeccionar_documento_texto
+            from api_backend.auditor.sga_auditor_judge import inspeccionar_documento_texto
             reporte_path = inspeccionar_documento_texto(doc_id)
             with open(reporte_path, "r", encoding="utf-8") as f:
                 raw = f.read()
@@ -105,8 +136,8 @@ def get_audit_results(doc_id: str):
     status: running | completed | error
     """
     # Intentar cargar desde archivo si existe
-    from pathlib import Path as P
-    report_path = ROOT / "data" / "evaluation_reports" / f"Auditoria_SGA_{doc_id}.txt"
+    from api_backend.config import Config
+    report_path = Config.DATA_DIR / "evaluation_reports" / f"Checklist_SGA_{doc_id}.txt"
     if report_path.exists() and doc_id not in _audit_cache:
         with open(report_path, "r", encoding="utf-8") as f:
             raw = f.read()

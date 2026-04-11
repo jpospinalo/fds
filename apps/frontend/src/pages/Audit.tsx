@@ -1,17 +1,7 @@
 import { useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { fetchDocuments, runAudit, getAuditResults, AuditResponse, DocumentInfo } from "../api/client";
-
-const CALIDAD_CLASS: Record<string, string> = {
-  Confiable: "badge-ok",
-  Conf_CR: "badge-cr",
-  NO_Conf: "badge-nc",
-};
-
-const PRESENCIA_CLASS: Record<string, string> = {
-  Presente: "badge-present",
-  No_Presente: "badge-absent",
-};
+import AuditTable from "../components/AuditTable";
 
 export default function Audit() {
   const [params] = useSearchParams();
@@ -73,6 +63,24 @@ export default function Audit() {
     a.click();
   };
 
+  const exportAsCSV = () => {
+    if (!result?.secciones) return;
+
+    let csv = "Sección,Ítem,Presencia,Calidad,Observaciones\n";
+    result.secciones.forEach((sec) => {
+      sec.items.forEach((item) => {
+        csv += `${sec.seccion},"${item.item}","${item.presencia}","${item.calidad}","${item.observaciones || ""}"\n`;
+      });
+    });
+
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `Auditoria_SGA_${selectedDoc}.csv`;
+    a.click();
+  };
+
   return (
     <div style={{ maxWidth: 1000 }}>
       <h1 style={{ fontSize: "1.25rem", marginBottom: "1.5rem" }}>Auditoría SGA</h1>
@@ -110,9 +118,14 @@ export default function Audit() {
           {polling ? "Auditando…" : loading ? "Iniciando…" : "Ejecutar auditoría"}
         </button>
         {result?.reporte_txt && (
-          <button className="btn-ghost" onClick={downloadReport}>
-            Descargar .txt
-          </button>
+          <>
+            <button className="btn-ghost" onClick={downloadReport}>
+              ⬇ Descargar .txt
+            </button>
+            <button className="btn-ghost" onClick={exportAsCSV}>
+              ⬇ Exportar CSV
+            </button>
+          </>
         )}
       </div>
 
@@ -125,83 +138,7 @@ export default function Audit() {
       {/* Tabla de resultados */}
       {result && result.status === "completed" && result.secciones.length > 0 && (
         <div>
-          {result.secciones.map((sec) => (
-            <div
-              key={sec.seccion}
-              style={{
-                background: "var(--surface)",
-                border: "1px solid var(--border)",
-                borderRadius: "var(--radius)",
-                marginBottom: "0.75rem",
-                overflow: "hidden",
-              }}
-            >
-              <div
-                style={{
-                  padding: "0.6rem 1rem",
-                  background: "var(--bg)",
-                  borderBottom: "1px solid var(--border)",
-                  fontSize: "0.85rem",
-                  fontWeight: 600,
-                }}
-              >
-                Sección {sec.seccion}
-                {sec.puntaje_porcentual !== undefined && (
-                  <span style={{ marginLeft: "1rem", color: "var(--text-muted)", fontWeight: 400 }}>
-                    {sec.puntaje_porcentual.toFixed(1)}%
-                  </span>
-                )}
-              </div>
-              {sec.items.length > 0 ? (
-                <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.8rem" }}>
-                  <thead>
-                    <tr style={{ background: "var(--bg)" }}>
-                      <th style={{ padding: "0.4rem 0.75rem", textAlign: "left", color: "var(--text-muted)" }}>
-                        Ítem
-                      </th>
-                      <th style={{ padding: "0.4rem 0.75rem", textAlign: "left", color: "var(--text-muted)" }}>
-                        Presencia
-                      </th>
-                      <th style={{ padding: "0.4rem 0.75rem", textAlign: "left", color: "var(--text-muted)" }}>
-                        Calidad
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {sec.items.map((item, idx) => (
-                      <tr
-                        key={idx}
-                        style={{ borderTop: "1px solid var(--border)" }}
-                      >
-                        <td style={{ padding: "0.4rem 0.75rem" }}>{item.item}</td>
-                        <td style={{ padding: "0.4rem 0.75rem" }}>
-                          <span className={`badge ${PRESENCIA_CLASS[item.presencia] ?? ""}`}>
-                            {item.presencia}
-                          </span>
-                        </td>
-                        <td style={{ padding: "0.4rem 0.75rem" }}>
-                          <span className={`badge ${CALIDAD_CLASS[item.calidad] ?? ""}`}>
-                            {item.calidad}
-                          </span>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              ) : (
-                <pre
-                  style={{
-                    padding: "0.75rem",
-                    fontSize: "0.75rem",
-                    color: "var(--text-muted)",
-                    whiteSpace: "pre-wrap",
-                  }}
-                >
-                  {sec.raw_text}
-                </pre>
-              )}
-            </div>
-          ))}
+          <AuditTable sections={result.secciones} docId={selectedDoc} />
         </div>
       )}
 

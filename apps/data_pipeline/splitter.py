@@ -1,11 +1,18 @@
-import os
 import json
-import boto3
+import os
+import sys
 from collections import defaultdict
+from pathlib import Path
+
+import boto3
 from langchain_text_splitters import MarkdownHeaderTextSplitter, RecursiveCharacterTextSplitter
 
-# Importamos nuestro Centro de Control
-from src.config import Config
+# Asegurar acceso a api_backend
+ROOT = Path(__file__).resolve().parent.parent
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
+
+from api_backend.config import Config
 
 def obtener_cliente_s3():
     return boto3.client('s3', 
