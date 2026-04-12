@@ -43,6 +43,15 @@ Verás el formulario de creación. Completa la pestaña Basics:
 - Subscription: Asegúrate de seleccionar Azure for Students si aplicaste a ese beneficio, o tu suscripción activa.
 - Resource group: Haz clic en "Create new" (Crear nuevo) y dale un nombre, por ejemplo: rg-rag-fds.
 - Region: Selecciona East US.
+>[!NOTE]
+>Si aparece una falla en la revision es por el tipo de region probar con las siguientes:
+>* Central US
+>* UK  South
+>* East US
+>* West Europe
+>* Canada Central
+>* Otras en caso de que fallen estas
+
 - Name: Este nombre debe ser único en todo Azure. Puedes usar algo como: openai-rag-fds-[tu-nombre].
 - Pricing tier: Selecciona Standard S0.
 
@@ -152,9 +161,12 @@ Al hacer clic en "Usar este modelo", aparecerá una ventana emergente para confi
 
 * Este es el nombre que irá en tu archivo .env (ej: text-embedding-3-large). 
 
-* Tipo de implementación: Déjalo en Estándar global para asegurar disponibilidad. 
+* Tipo de implementación: Déjalo en Estándar global para asegurar disponibilidad.
+  
+>[!NOTE]
+>En caso de que aparezca con Estandar al selecionar el Usar este modelo, dejarlo ahi
 
-* Tokens por límite de velocidad: Puedes dejar el valor predeterminado, para este caso se uso 334K
+* Tokens por límite de velocidad: Puedes dejar el valor predeterminado, para este caso se uso 334K por maximidad
 
 
 
