@@ -181,7 +181,7 @@ Tras la implementación, Azure te llevará a la pantalla de Detalles de la imple
 ## PASO 13: Configurar el archivo `.env`
 
 ```env
-env AZURE_OPENAI_API_KEY="tu_clave_secreta_aqui" # Copia la "Clave" de la pantalla de detalles 
+AZURE_OPENAI_API_KEY="tu_clave_secreta_aqui" # Copia la "Clave" de la pantalla de detalles 
 AZURE_OPENAI_ENDPOINT="https://tu-recurso.openai.azure.com/" # Copia el "Punto de conexión (URL) 
 AZURE_OPENAI_API_VERSION="2024-02-01" # o una versión más reciente soportada 
 AZURE_OPENAI_EMBEDDINGS_DEPLOYMENT="text-embedding-3-large" # El "Nombre de la implementación" que elegiste en el paso 11
