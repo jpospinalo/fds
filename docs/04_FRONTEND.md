@@ -1,8 +1,3 @@
-¡Perfecto! Con este último documento cerramos el ciclo completo de la documentación técnica. El objetivo aquí es que cualquier desarrollador Frontend (o Full-Stack) sepa exactamente cómo levantar la interfaz gráfica en React/Vite, cómo conectarla a tu API y qué limitaciones actuales debe tener en cuenta.
-
-Crea el archivo **`docs/04_FRONTEND.md`** y pega el siguiente contenido:
-
-```markdown
 # Frontend Web y Aplicación SPA
 
 El dominio `apps/frontend/` contiene la interfaz de usuario (UI) de la plataforma `rag_fds`. Es una Single Page Application (SPA) moderna, rápida y reactiva, construida para que los auditores puedan interactuar con el motor de Inteligencia Artificial sin necesidad de usar la terminal.
