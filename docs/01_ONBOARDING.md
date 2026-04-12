@@ -23,13 +23,39 @@ chmod +x scripts/setup_aws.sh
 ./scripts/setup_aws.sh
 ```
 
+## 3. Configurar ChromaDB en EC2 (Motor Vectorial)
+Nuestra arquitectura aloja la base de datos vectorial en la instancia EC2 para separar la carga de trabajo. Debes inicializar este servicio remoto antes de levantar el backend local.
+
+1. Conéctate a tu instancia EC2 recién creada mediante SSH:
+
+```bash
+ssh -i "tu-llave.pem" ubuntu@<EC2_ELASTIC_IP>
+```
+
+2. Crea el archivo de instalación dentro de la instancia EC2:
+
+```bash
+nano setup_chromadb.sh
+```
+
+3. Abre el archivo scripts/setup_chromadb.sh de tu repositorio local, copia todo su contenido y pégalo en la terminal del EC2. Guarda los cambios (Ctrl+O, luego Enter) y sal del editor (Ctrl+X).
+
+4. Otorga permisos de ejecución y lanza el instalador:
+
+```bash
+chmod +x setup_chromadb.sh
+./setup_chromadb.sh
+```
+Al finalizar, el script creará un servicio systemd y ChromaDB quedará ejecutándose en segundo plano en el puerto 4000. Puedes verificarlo corriendo: curl http://localhost:4000/api/v1/heartbeat.
+
 Al finalizar, el script mostrará en pantalla el nombre del bucket S3 y la IP Elástica de tu servidor. Guarda estos datos para el siguiente paso.
 
-## 3. Configurar las Variables de Entorno
+## 4. Configurar las Variables de Entorno
 
 Por motivos de seguridad, las credenciales no se incluyen en el repositorio. Crea un archivo llamado `.env` en la raíz del proyecto (`rag_fds/.env`) y define la siguiente estructura. 
 
-**Nota importante:** Si aún no tienes configurados los servicios de Azure OpenAI, consulta la [Guía de Configuración de Azure Embeddings](./05_AZURE_EMBEDDINGS.md) antes de continuar.
+>[!NOTE]
+>Si aún no tienes configurados los servicios de Azure OpenAI, consulta la [Guía de Configuración de Azure Embeddings](./05_AZURE_EMBEDDINGS.md) antes de continuar.
 
 ```env
 # Credenciales de AWS
@@ -61,7 +87,7 @@ CHROMA_SERVER_HOST=IP_del_servidor
 CHROMA_SERVER_PORT=4000
 ```
 
-## 4. Configurar el Entorno Virtual (Backend)
+## 5. Configurar el Entorno Virtual (Backend)
 
 Para ejecutar el motor RAG y la API, es necesario configurar un entorno de Python aislado.
 
@@ -79,7 +105,7 @@ venv\Scripts\activate
 pip install -r apps/api_backend/requirements_api.txt
 ```
 
-## 5. Ejecución del Servidor Local
+## 6. Ejecución del Servidor Local
 
 Con el entorno virtual activado y tu archivo `.env` configurado, ejecuta el backend utilizando el comando para nuestra arquitectura monorepo:
 
