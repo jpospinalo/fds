@@ -538,7 +538,7 @@ def health():
 
 ## 8. Flujo de Datos Completo (E2E)
 
-        ```
+```
                     ┌─────────────────────────────────────────┐
                     │        Frontend (React + Vite)          │
                     │  - Interfaz de búsqueda                 │
