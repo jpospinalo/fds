@@ -1,4 +1,4 @@
-# Plataforma de Auditoría Inteligente SGA (RAG-as-a-Judge)
+# Plataforma de Auditoría Inteligente SGA (rag_fds)
 
 Plataforma Full-Stack impulsada por Inteligencia Artificial para la ingesta, vectorización y auditoría automática de Fichas de Datos de Seguridad (FDS) bajo la normativa del Sistema Globalmente Armonizado (SGA). 
 
@@ -25,6 +25,9 @@ Hemos estructurado la documentación paso a paso para facilitar la integración 
 
 4. **[Frontend Web](./docs/04_FRONTEND.md)**
    * Cómo levantar la interfaz en React/Vite y estructura de componentes.
+
+5. **[Configuración de Azure Embeddings](./docs/05_AZURE_EMBEDDINGS.md)**
+   * Tutorial paso a paso para crear y configurar el servicio de vectorización de texto en Azure OpenAI.
 
 ---
 
