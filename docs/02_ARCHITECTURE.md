@@ -132,25 +132,33 @@ data/
 En `.env`:
 
 ```env
-# AWS S3 - Almacenamiento Definitivo
-AWS_ACCESS_KEY_ID=...
-AWS_SECRET_ACCESS_KEY=...
-AWS_SESSION_TOKEN=...
+# Credenciales de AWS
+AWS_ACCESS_KEY_ID=tu_access_key_aqui
+AWS_SECRET_ACCESS_KEY=tu_secret_key_aqui
+AWS_SESSION_TOKEN=tu_token_key_aqui
 AWS_REGION=us-east-1
-S3_BUCKET_NAME=rag-fds-bucket
 
-# ChromaDB Remoto (EC2)
-CHROMA_SERVER_HOST=<ip-ec2>
-CHROMA_SERVER_PORT=8000
+# Credenciales LLM
+GEMINI_API_KEY=tu_api_key_aqui
 
-# Embeddings (Azure OpenAI)
-AZURE_OPENAI_API_KEY=...
-AZURE_OPENAI_ENDPOINT=...
-AZURE_OPENAI_API_VERSION=2024-02-15
-AZURE_OPENAI_EMBEDDINGS_DEPLOYMENT=text-embedding-3-small
+# Configuración del Bucket y Rutas (Arquitectura Medallón)
+S3_BUCKET_NAME=tu_bucket_aqui
+S3_PREFIX_DOCS=bronze/docs/
+S3_PREFIX_BRONCE=bronze/processed/
+S3_PREFIX_SILVER=silver/
+S3_PREFIX_GOLD=gold/
+S3_PREFIX_QUARANTINE=Quarantine/
 
-# LLM Juez (Google Gemini)
-GOOGLE_API_KEY=...
+# Azure OpenAI
+# Consulta ./docs/05_AZURE_EMBEDDINGS.md para obtener estos valores
+AZURE_OPENAI_API_KEY=tu_api_key_aqui
+AZURE_OPENAI_ENDPOINT=tu_end_point_aqui
+AZURE_OPENAI_API_VERSION=tu_version_aqui
+AZURE_OPENAI_EMBEDDINGS_DEPLOYMENT=tu_modelo_aqui
+
+# CHROMA KEYS
+CHROMA_SERVER_HOST=IP_del_servidor
+CHROMA_SERVER_PORT=4000
 ```
 
 ## 7. Consideraciones de Arquitectura (Estado Actual)
