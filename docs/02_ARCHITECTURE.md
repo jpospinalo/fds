@@ -163,7 +163,7 @@ CHROMA_SERVER_PORT=4000
 
 ## 7. Consideraciones de Arquitectura (Estado Actual)
 
-*Implementado:**
+**Implementado:**
 * Pipeline medallón en 3 capas (Bronze → Silver → Gold)
 * Almacenamiento definitivo en AWS S3
 * ChromaDB remoto para búsqueda vectorial
