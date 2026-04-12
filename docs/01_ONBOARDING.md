@@ -23,6 +23,8 @@ chmod +x scripts/setup_aws.sh
 ./scripts/setup_aws.sh
 ```
 
+Al finalizar, el script mostrará en pantalla el nombre del bucket S3 y la IP Elástica de tu servidor. Guarda estos datos para el siguiente paso.
+
 ## 3. Configurar ChromaDB en EC2 (Motor Vectorial)
 Nuestra arquitectura aloja la base de datos vectorial en la instancia EC2 para separar la carga de trabajo. Debes inicializar este servicio remoto antes de levantar el backend local.
 
