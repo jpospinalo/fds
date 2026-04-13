@@ -1,7 +1,18 @@
 import axios from "axios";
+import path from "path";
+import { fileURLToPath } from "url";
+import dotenv from "dotenv";
 
-// Usa variable de entorno si está definida, sino localhost
-const BASE_URL = import.meta.env.VITE_API_URL || "http://ec2-18-232-93-236.compute-1.amazonaws.com:8000";
+// Manually defining __dirname for ES Modules
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+// Load .env from three levels up
+dotenv.config({ path: path.resolve(__dirname, "../../../.env"), override: true });
+
+// Correctly format the URL logic
+const endpoint = process.env.VITE_API_URL;
+const BASE_URL = endpoint ? `${endpoint}:8000` : "http://localhost:8000";
 
 export const api = axios.create({
   baseURL: BASE_URL,
