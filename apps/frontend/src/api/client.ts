@@ -1,7 +1,7 @@
 import axios from "axios";
 
 // Usa variable de entorno si está definida, sino localhost
-const BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
+const BASE_URL = import.meta.env.VITE_API_URL || "http://ec2-18-232-93-236.compute-1.amazonaws.com:8000";
 
 export const api = axios.create({
   baseURL: BASE_URL,

@@ -17,7 +17,7 @@ def obtener_llm_inspector():
     print(" Inicializando Juez Auditor (Gemini-3.1-flash)...")
     return ChatGoogleGenerativeAI(
         model="gemini-3.1-flash-lite-preview", 
-        temperature=0, 
+        temperature=0.5, 
         google_api_key=Config.GOOGLE_API_KEY
     )
 
@@ -52,7 +52,7 @@ def inspeccionar_documento_texto(doc_id: str):
     print(f"==================================================\n")
     
     # Secciones objetivo (Solo texto)
-    SECCIONES_OBJETIVO = [1, 3, 4, 5, 6]
+    SECCIONES_OBJETIVO = [1, 3, 4, 5, 6, 9]
     
     llm_inspector = obtener_llm_inspector()
     cadena_inspeccion = PROMPT_INSPECTOR | llm_inspector
