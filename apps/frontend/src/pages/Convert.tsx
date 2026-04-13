@@ -8,7 +8,7 @@ export default function Convert() {
   const [markdown, setMarkdown] = useState("");
   const [fileName, setFileName] = useState("documento");
   const [loading, setLoading] = useState(false);
-  const [view, setView] = useState<"source" | "preview">("source");
+  const [view, setView] = useState<"source" | "preview">("preview");
 
   const handleConvert = async () => {
     if (!inputText.trim()) return;
@@ -21,160 +21,237 @@ export default function Convert() {
     }
   };
 
-  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFile = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    setFileName(file.name.replace(".txt", ""));
+    setFileName(file.name.replace(/\.txt$/, ""));
     const reader = new FileReader();
     reader.onload = () => setInputText(reader.result as string);
     reader.readAsText(file, "utf-8");
+    e.target.value = "";
+  };
+
+  const downloadTxt = () => {
+    dl(inputText, `${fileName}.txt`, "text/plain");
   };
 
   const downloadMd = () => {
-    const blob = new Blob([markdown], { type: "text/markdown" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `${fileName}.md`;
-    a.click();
+    if (!markdown) return;
+    dl(markdown, `${fileName}.md`, "text/markdown");
   };
 
-  const copyMd = () => {
-    navigator.clipboard.writeText(markdown);
+  const downloadBoth = () => {
+    downloadTxt();
+    setTimeout(downloadMd, 300);
   };
+
+  function dl(content: string, name: string, type: string) {
+    const blob = new Blob([content], { type });
+    const url = URL.createObjectURL(blob);
+    Object.assign(document.createElement("a"), { href: url, download: name }).click();
+  }
+
+  const copyMd = () => navigator.clipboard.writeText(markdown);
 
   return (
-    <div style={{ maxWidth: 1100 }}>
-      <h1 style={{ fontSize: "1.25rem", marginBottom: "0.5rem" }}>TXT → Markdown</h1>
-      <p style={{ fontSize: "0.85rem", color: "var(--text-muted)", marginBottom: "1.5rem" }}>
-        Pega el texto de una FDS o sube un .txt y obtén Markdown estructurado automáticamente.
+    <div style={{ maxWidth: 1200 }}>
+      <h1 style={{ fontSize: "1.25rem", marginBottom: "0.5rem", fontWeight: 500 }}>
+        TXT → Markdown
+      </h1>
+      <p style={{ fontSize: 13, color: "var(--color-text-secondary)", marginBottom: "1.5rem" }}>
+        Convierte texto plano de una FDS a Markdown estructurado. Ambas versiones se descargan juntas.
       </p>
 
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem" }}>
-        {/* Panel izquierdo: Input */}
-        <div>
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "space-between",
-              marginBottom: "0.5rem",
-            }}
-          >
-            <label style={{ fontSize: "0.8rem", color: "var(--text-muted)" }}>
-              Texto de entrada
-            </label>
-            <label
-              htmlFor="file-upload"
+      {/* Barra superior */}
+      <div
+        style={{
+          display: "flex",
+          gap: 8,
+          alignItems: "center",
+          marginBottom: "1rem",
+          flexWrap: "wrap",
+        }}
+      >
+        <input
+          placeholder="Nombre del archivo"
+          value={fileName}
+          onChange={(e) => setFileName(e.target.value)}
+          style={{ width: 200 }}
+        />
+        <label
+          htmlFor="txt-upload"
+          style={{
+            padding: "0.45rem 0.9rem",
+            fontSize: 13,
+            background: "var(--color-background-primary)",
+            border: "0.5px solid var(--color-border-secondary)",
+            borderRadius: "var(--border-radius-md)",
+            cursor: "pointer",
+            color: "var(--color-text-primary)",
+          }}
+        >
+          Subir .txt
+        </label>
+        <input id="txt-upload" type="file" accept=".txt" onChange={handleFile} style={{ display: "none" }} />
+        <button
+          onClick={handleConvert}
+          disabled={loading || !inputText.trim()}
+          style={{
+            padding: "0.45rem 0.9rem",
+            fontSize: 13,
+            background: inputText.trim() ? "#6366f1" : "#d1d5db",
+            color: inputText.trim() ? "#fff" : "#9ca3af",
+            border: "none",
+            borderRadius: "var(--border-radius-md)",
+            cursor: inputText.trim() ? "pointer" : "not-allowed",
+          }}
+        >
+          {loading ? "Convirtiendo…" : "Convertir"}
+        </button>
+        {markdown && (
+          <>
+            <button
+              onClick={downloadBoth}
               style={{
-                fontSize: "0.75rem",
-                color: "var(--accent)",
+                padding: "0.45rem 0.9rem",
+                fontSize: 13,
+                background: "#6366f1",
+                color: "#fff",
+                border: "none",
+                borderRadius: "var(--border-radius-md)",
                 cursor: "pointer",
               }}
             >
-              Subir .txt
-            </label>
-            <input
-              id="file-upload"
-              type="file"
-              accept=".txt"
-              onChange={handleFileUpload}
-              style={{ display: "none" }}
-            />
-          </div>
+              ↓ Descargar TXT + MD
+            </button>
+            <button
+              onClick={downloadTxt}
+              style={{
+                padding: "0.45rem 0.9rem",
+                fontSize: 13,
+                background: "var(--color-background-primary)",
+                border: "0.5px solid var(--color-border-secondary)",
+                borderRadius: "var(--border-radius-md)",
+                cursor: "pointer",
+                color: "var(--color-text-primary)",
+              }}
+            >
+              ↓ TXT
+            </button>
+            <button
+              onClick={downloadMd}
+              style={{
+                padding: "0.45rem 0.9rem",
+                fontSize: 13,
+                background: "var(--color-background-primary)",
+                border: "0.5px solid var(--color-border-secondary)",
+                borderRadius: "var(--border-radius-md)",
+                cursor: "pointer",
+                color: "var(--color-text-primary)",
+              }}
+            >
+              ↓ MD
+            </button>
+            <button
+              onClick={copyMd}
+              style={{
+                padding: "0.45rem 0.9rem",
+                fontSize: 13,
+                background: "var(--color-background-primary)",
+                border: "0.5px solid var(--color-border-secondary)",
+                borderRadius: "var(--border-radius-md)",
+                cursor: "pointer",
+                color: "var(--color-text-primary)",
+              }}
+            >
+              Copiar MD
+            </button>
+          </>
+        )}
+      </div>
+
+      {/* Layout de tres paneles */}
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns: markdown ? "1fr 1fr 1fr" : "1fr",
+          gap: 12,
+          alignItems: "start",
+        }}
+      >
+        {/* Panel 1: Texto de entrada */}
+        <div>
+          <p style={{ fontSize: 11, color: "var(--color-text-secondary)", marginBottom: 4 }}>
+            Texto de entrada (TXT)
+          </p>
           <textarea
-            placeholder="Pega aquí el texto de la ficha de datos de seguridad…"
+            placeholder="Pega aquí el texto de la FDS…"
             value={inputText}
             onChange={(e) => setInputText(e.target.value)}
-            style={{ height: 420, resize: "vertical", fontFamily: "monospace", fontSize: "0.8rem" }}
+            style={{
+              height: 500,
+              resize: "vertical",
+              fontFamily: "var(--font-mono)",
+              fontSize: 12,
+              lineHeight: 1.5,
+            }}
           />
-          <div style={{ display: "flex", gap: "0.5rem", marginTop: "0.75rem" }}>
-            <input
-              placeholder="Nombre del archivo"
-              value={fileName}
-              onChange={(e) => setFileName(e.target.value)}
-              style={{ flex: 1 }}
-            />
-            <button className="btn-primary" onClick={handleConvert} disabled={loading || !inputText.trim()}>
-              {loading ? "Convirtiendo…" : "Convertir"}
-            </button>
-          </div>
+          {inputText && (
+            <p style={{ fontSize: 11, color: "var(--color-text-secondary)", marginTop: 4 }}>
+              {inputText.length.toLocaleString()} caracteres
+            </p>
+          )}
         </div>
 
-        {/* Panel derecho: Output */}
-        <div>
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "space-between",
-              marginBottom: "0.5rem",
-            }}
-          >
-            <div style={{ display: "flex", gap: "0.25rem" }}>
-              {(["source", "preview"] as const).map((v) => (
-                <button
-                  key={v}
-                  onClick={() => setView(v)}
-                  style={{
-                    fontSize: "0.75rem",
-                    padding: "3px 10px",
-                    background: view === v ? "var(--accent)" : "transparent",
-                    color: view === v ? "#fff" : "var(--text-muted)",
-                    border: "1px solid var(--border)",
-                    borderRadius: 4,
-                  }}
-                >
-                  {v === "source" ? "Fuente" : "Vista previa"}
-                </button>
-              ))}
-            </div>
-            {markdown && (
-              <div style={{ display: "flex", gap: "0.5rem" }}>
-                <button className="btn-ghost" onClick={copyMd} style={{ fontSize: "0.75rem" }}>
-                  Copiar
-                </button>
-                <button className="btn-ghost" onClick={downloadMd} style={{ fontSize: "0.75rem" }}>
-                  Descargar .md
-                </button>
-              </div>
-            )}
-          </div>
-
-          {view === "source" ? (
+        {/* Panel 2: Markdown fuente */}
+        {markdown && (
+          <div>
+            <p style={{ fontSize: 11, color: "var(--color-text-secondary)", marginBottom: 4 }}>
+              Markdown generado (fuente)
+            </p>
             <textarea
               readOnly
               value={markdown}
-              placeholder="El Markdown generado aparecerá aquí…"
               style={{
-                height: 420,
-                fontFamily: "monospace",
-                fontSize: "0.8rem",
+                height: 500,
                 resize: "vertical",
-                color: markdown ? "var(--text)" : "var(--text-muted)",
+                fontFamily: "var(--font-mono)",
+                fontSize: 12,
+                lineHeight: 1.5,
+                color: "var(--color-text-primary)",
               }}
             />
-          ) : (
+            {markdown && (
+              <p style={{ fontSize: 11, color: "var(--color-text-secondary)", marginTop: 4 }}>
+                {markdown.length.toLocaleString()} caracteres
+              </p>
+            )}
+          </div>
+        )}
+
+        {/* Panel 3: Vista previa renderizada */}
+        {markdown && (
+          <div>
+            <p style={{ fontSize: 11, color: "var(--color-text-secondary)", marginBottom: 4 }}>
+              Vista previa renderizada
+            </p>
             <div
               style={{
-                height: 420,
+                height: 500,
                 overflowY: "auto",
-                background: "var(--surface)",
-                border: "1px solid var(--border)",
-                borderRadius: "var(--radius)",
+                background: "var(--color-background-primary)",
+                border: "0.5px solid var(--color-border-tertiary)",
+                borderRadius: "var(--border-radius-lg)",
                 padding: "1rem",
-                fontSize: "0.875rem",
+                fontSize: 13,
                 lineHeight: 1.6,
+                color: "var(--color-text-primary)",
               }}
             >
-              {markdown ? (
-                <ReactMarkdown remarkPlugins={[remarkGfm]}>{markdown}</ReactMarkdown>
-              ) : (
-                <p style={{ color: "var(--text-muted)" }}>Vista previa del Markdown…</p>
-              )}
+              <ReactMarkdown remarkPlugins={[remarkGfm]}>{markdown}</ReactMarkdown>
             </div>
-          )}
-        </div>
+          </div>
+        )}
       </div>
     </div>
   );

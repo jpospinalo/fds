@@ -6,6 +6,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from api_backend.routers import documents, search, audit, convert
+from api_backend.routers import documents, search, audit, convert, pipeline
 
 # Agregar raíz del proyecto al path
 ROOT = Path(__file__).resolve().parent.parent
@@ -35,7 +36,7 @@ app.include_router(documents.router, prefix=API_PREFIX)
 app.include_router(search.router, prefix=API_PREFIX)
 app.include_router(audit.router, prefix=API_PREFIX)
 app.include_router(convert.router, prefix=API_PREFIX)
-
+app.include_router(pipeline.router)
 
 @app.get(f"{API_PREFIX}/health", tags=["Estado"])
 def health():

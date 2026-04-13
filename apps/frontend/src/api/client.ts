@@ -1,13 +1,10 @@
 import axios from "axios";
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "/api";
-
 export const api = axios.create({
-  baseURL: API_BASE_URL,
+  baseURL: "http://localhost:8000",
   headers: { "Content-Type": "application/json" },
 });
 
-// ── Tipos ────────────────────────────────────────────────────
 export interface DocumentInfo {
   doc_id: string;
   secciones_disponibles: number[];
@@ -47,7 +44,17 @@ export interface AuditResponse {
   reporte_txt?: string;
 }
 
-// ── Funciones de API ─────────────────────────────────────────
+export interface PipelineJob {
+  job_id: string;
+  doc_id: string;
+  status: "running" | "completed" | "error";
+  progress: number;
+  message: string;
+  markdown?: string;
+  secciones?: Record<number, string | null>;
+  secciones_encontradas?: number;
+}
+
 export const fetchDocuments = () =>
   api.get<DocumentInfo[]>("/documents/").then((r) => r.data);
 
@@ -80,3 +87,18 @@ export const convertTxtToMd = (texto: string, nombre?: string) =>
       nombre_archivo: nombre,
     })
     .then((r) => r.data);
+
+export const uploadPdf = (file: File) => {
+  const form = new FormData();
+  form.append("file", file);
+  return api
+    .post<{ job_id: string; doc_id: string; status: string }>(
+      "/pipeline/upload",
+      form,
+      { headers: { "Content-Type": "multipart/form-data" } }
+    )
+    .then((r) => r.data);
+};
+
+export const getJobStatus = (jobId: string) =>
+  api.get<PipelineJob>(`/pipeline/${jobId}/status`).then((r) => r.data);
