@@ -8,3 +8,4 @@ langchain-google-genai==4.2.1
 langchain-chroma==1.1.0
 python-dotenv==1.2.2
 pydantic==2.12.3
+pandas==2.2.2

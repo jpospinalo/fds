@@ -5,7 +5,7 @@ import uvicorn
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from api_backend.routers import documents, search, audit, convert
+# CORRECCIÓN: se eliminó la línea duplicada de imports
 from api_backend.routers import documents, search, audit, convert, pipeline
 
 # Agregar raíz del proyecto al path
@@ -24,9 +24,15 @@ app = FastAPI(
 )
 
 # CORS: permite llamadas desde el frontend Vite (localhost:5173)
+# y desde el host de EC2 si se despliega ahí
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173", "http://localhost:3000"],
+    allow_origins=[
+        "http://localhost:5173",
+        "http://localhost:3000",
+        "http://ec2-3-91-103-135.compute-1.amazonaws.com",
+        "http://ec2-3-91-103-135.compute-1.amazonaws.com:5173",
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -36,13 +42,13 @@ app.include_router(documents.router, prefix=API_PREFIX)
 app.include_router(search.router, prefix=API_PREFIX)
 app.include_router(audit.router, prefix=API_PREFIX)
 app.include_router(convert.router, prefix=API_PREFIX)
-app.include_router(pipeline.router)
+app.include_router(pipeline.router)  # pipeline ya tiene su propio prefix="/pipeline"
+
 
 @app.get(f"{API_PREFIX}/health", tags=["Estado"])
 def health():
-    return {"status": "ok", "service": "RAG FDS API"}
+    return {"status": "ok", "service": "RAG FDS API", "version": "1.0.0"}
 
 
 if __name__ == "__main__":
-    import uvicorn
-    uvicorn.run("api.main:app", host="0.0.0.0", port=8000, reload=True)
+    uvicorn.run("api_backend.main:app", host="0.0.0.0", port=8000, reload=True)

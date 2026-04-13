@@ -1,182 +1,274 @@
+/* ============================================================
+   DESIGN TOKENS — única fuente de verdad para todo el proyecto
+   ============================================================ */
 :root {
-  --bg: #0f1117;
-  --surface: #1a1d27;
-  --border: #2a2d3a;
-  --accent: #6366f1;
-  --accent-hover: #4f46e5;
-  --text: #e2e8f0;
-  --text-muted: #64748b;
-  --success: #10b981;
-  --warning: #f59e0b;
-  --error: #ef4444;
-  --radius: 8px;
-  font-family: 'Inter', system-ui, sans-serif;
+  /* Fondos */
+  --bg:                       #0d0f14;
+  --surface:                  #161921;
+  --surface-2:                #1e2230;
+  --surface-hover:            #252a3a;
+
+  /* Bordes */
+  --border:                   #2a2f42;
+  --border-soft:              #1f2436;
+
+  /* Acento principal */
+  --accent:                   #6366f1;
+  --accent-hover:             #4f46e5;
+  --accent-muted:             rgba(99, 102, 241, 0.12);
+
+  /* Texto */
+  --text:                     #e2e8f0;
+  --text-secondary:           #8892a4;
+  --text-muted:               #4b5568;
+
+  /* Semáforo */
+  --success:                  #10b981;
+  --success-bg:               rgba(16, 185, 129, 0.12);
+  --warning:                  #f59e0b;
+  --warning-bg:               rgba(245, 158, 11, 0.12);
+  --error:                    #ef4444;
+  --error-bg:                 rgba(239, 68, 68, 0.12);
+  --info:                     #60a5fa;
+  --info-bg:                  rgba(96, 165, 250, 0.12);
+
+  /* Radio y fuentes */
+  --radius:                   8px;
+  --radius-sm:                4px;
+  --radius-lg:                12px;
+  --radius-xl:                16px;
+  --font-mono:                'JetBrains Mono', 'Fira Code', 'Cascadia Code', monospace;
+
+  /* Aliases para compatibilidad con componentes que usaban variables de Claude */
+  --color-background-primary:    var(--surface);
+  --color-background-secondary:  var(--surface-2);
+  --color-background-tertiary:   var(--bg);
+  --color-border-tertiary:       var(--border);
+  --color-border-secondary:      var(--border-soft);
+  --color-text-primary:          var(--text);
+  --color-text-secondary:        var(--text-secondary);
+  --border-radius-md:            var(--radius);
+  --border-radius-lg:            var(--radius-lg);
+  --border-radius-xl:            var(--radius-xl);
 }
 
-* { box-sizing: border-box; margin: 0; padding: 0; }
+/* ============================================================
+   RESET Y BASE
+   ============================================================ */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html { font-size: 16px; scroll-behavior: smooth; }
 
 body {
   background: var(--bg);
   color: var(--text);
+  font-family: 'IBM Plex Sans', 'DM Sans', system-ui, sans-serif;
   min-height: 100vh;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
 }
 
 a { color: var(--accent); text-decoration: none; }
 a:hover { text-decoration: underline; }
 
+/* ============================================================
+   TIPOGRAFÍA
+   ============================================================ */
+h1, h2, h3, h4 {
+  font-weight: 600;
+  line-height: 1.3;
+  color: var(--text);
+}
+
+/* ============================================================
+   BOTONES
+   ============================================================ */
 button {
   cursor: pointer;
   border: none;
   border-radius: var(--radius);
   padding: 0.5rem 1rem;
-  font-size: 0.9rem;
-  transition: background 0.15s;
+  font-size: 0.875rem;
+  font-family: inherit;
+  transition: background 0.15s, opacity 0.15s, transform 0.1s;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
 }
+
+button:active:not(:disabled) { transform: scale(0.98); }
 
 .btn-primary {
   background: var(--accent);
   color: #fff;
+  font-weight: 500;
 }
-.btn-primary:hover { background: var(--accent-hover); }
-.btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
+.btn-primary:hover:not(:disabled) { background: var(--accent-hover); }
+.btn-primary:disabled { opacity: 0.45; cursor: not-allowed; }
 
 .btn-ghost {
   background: transparent;
   color: var(--text);
   border: 1px solid var(--border);
 }
-.btn-ghost:hover { background: var(--surface); }
+.btn-ghost:hover:not(:disabled) { background: var(--surface-2); }
+.btn-ghost:disabled { opacity: 0.45; cursor: not-allowed; }
 
+.btn-danger {
+  background: var(--error-bg);
+  color: var(--error);
+  border: 1px solid rgba(239, 68, 68, 0.25);
+}
+.btn-danger:hover:not(:disabled) { background: rgba(239, 68, 68, 0.2); }
+
+/* ============================================================
+   INPUTS
+   ============================================================ */
 textarea, input, select {
-  background: var(--surface);
+  background: var(--surface-2);
   border: 1px solid var(--border);
   border-radius: var(--radius);
   color: var(--text);
   padding: 0.5rem 0.75rem;
-  font-size: 0.9rem;
+  font-size: 0.875rem;
+  font-family: inherit;
   outline: none;
   width: 100%;
+  transition: border-color 0.15s;
 }
+
 textarea:focus, input:focus, select:focus {
   border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-muted);
 }
 
+textarea { resize: vertical; }
+
+select option { background: var(--surface-2); }
+
+/* ============================================================
+   BADGES
+   ============================================================ */
 .badge {
-  display: inline-block;
-  padding: 2px 8px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 10px;
   border-radius: 20px;
-  font-size: 0.75rem;
+  font-size: 0.72rem;
   font-weight: 600;
-}
-.badge-ok { background: #064e3b; color: var(--success); }
-.badge-cr { background: #451a03; color: var(--warning); }
-.badge-nc { background: #450a0a; color: var(--error); }
-.badge-present { background: #1e3a5f; color: #60a5fa; }
-.badge-absent { background: #1f1f1f; color: var(--text-muted); }
-
-/* Estilos para la tabla de auditoría */
-.audit-summary {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 1.5rem;
-  padding: 1.5rem;
-  border-radius: var(--radius);
-  background: linear-gradient(135deg, var(--bg), var(--surface));
-  border: 2px solid var(--accent);
-  margin-bottom: 2rem;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
 }
 
-.summary-item {
-  text-align: center;
-}
+/* Calidad */
+.badge-ok  { background: var(--success-bg); color: var(--success); border: 1px solid rgba(16,185,129,0.25); }
+.badge-cr  { background: var(--warning-bg); color: var(--warning); border: 1px solid rgba(245,158,11,0.25); }
+.badge-nc  { background: var(--error-bg);   color: var(--error);   border: 1px solid rgba(239,68,68,0.25); }
 
-.summary-value {
-  font-size: 2rem;
-  font-weight: 700;
-  margin-bottom: 0.25rem;
-}
+/* Presencia */
+.badge-present { background: var(--info-bg); color: var(--info); border: 1px solid rgba(96,165,250,0.25); }
+.badge-absent  { background: var(--surface-2); color: var(--text-muted); border: 1px solid var(--border); }
 
-.summary-label {
-  font-size: 0.85rem;
-  color: var(--text-muted);
-}
-
-.audit-section {
+/* ============================================================
+   TARJETAS / PANELES GENÉRICOS
+   ============================================================ */
+.card {
   background: var(--surface);
   border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 1.25rem;
+}
+
+.panel {
+  background: var(--surface-2);
+  border: 1px solid var(--border-soft);
   border-radius: var(--radius);
-  overflow: hidden;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-  margin-bottom: 1.5rem;
-}
-
-.section-header {
   padding: 1rem;
-  background: linear-gradient(90deg, var(--bg) 0%, var(--surface) 100%);
-  border-bottom: 1px solid var(--border);
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
 }
 
-.section-title {
-  font-size: 1rem;
-  font-weight: 600;
-  margin-bottom: 0.25rem;
-}
+/* ============================================================
+   UTILIDADES
+   ============================================================ */
+.text-muted    { color: var(--text-muted); }
+.text-secondary { color: var(--text-secondary); }
+.font-mono     { font-family: var(--font-mono); }
+.truncate      { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
-.section-stats {
-  font-size: 0.8rem;
-  color: var(--text-muted);
-}
+/* ============================================================
+   SCROLLBAR PERSONALIZADA
+   ============================================================ */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
 
-.section-score {
-  font-size: 1.25rem;
-  font-weight: 700;
-  min-width: 60px;
-  text-align: right;
-}
-
-.audit-table {
+/* ============================================================
+   PROSE (para ReactMarkdown)
+   ============================================================ */
+.prose { line-height: 1.7; }
+.prose h1, .prose h2, .prose h3 { margin-top: 1.5rem; margin-bottom: 0.5rem; }
+.prose p  { margin-bottom: 0.75rem; }
+.prose ul, .prose ol { padding-left: 1.5rem; margin-bottom: 0.75rem; }
+.prose li { margin-bottom: 0.25rem; }
+.prose table {
   width: 100%;
   border-collapse: collapse;
+  margin-bottom: 1rem;
   font-size: 0.85rem;
 }
-
-.audit-table thead {
-  background: var(--bg);
-  border-bottom: 2px solid var(--border);
-}
-
-.audit-table th {
-  padding: 0.75rem;
+.prose th {
+  background: var(--surface-2);
+  padding: 0.5rem 0.75rem;
   text-align: left;
-  color: var(--text-muted);
+  border: 1px solid var(--border);
   font-weight: 600;
 }
+.prose td {
+  padding: 0.45rem 0.75rem;
+  border: 1px solid var(--border);
+  vertical-align: top;
+}
+.prose tr:nth-child(even) td { background: rgba(255,255,255,0.02); }
+.prose code {
+  font-family: var(--font-mono);
+  font-size: 0.82em;
+  background: var(--surface-2);
+  padding: 0.1em 0.4em;
+  border-radius: var(--radius-sm);
+}
+.prose pre {
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1rem;
+  overflow-x: auto;
+}
+.prose pre code { background: none; padding: 0; }
 
-.audit-table th:nth-child(2),
-.audit-table th:nth-child(3) {
-  text-align: center;
+/* ============================================================
+   ANIMACIONES
+   ============================================================ */
+@keyframes spin {
+  to { transform: rotate(360deg); }
 }
 
-.audit-table tbody tr {
-  border-bottom: 1px solid var(--border);
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(4px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
 
-.audit-table tbody tr:nth-child(even) {
-  background: rgba(0,0,0,0.02);
-}
+.animate-fade-in { animation: fadeIn 0.2s ease forwards; }
 
-.audit-table td {
-  padding: 0.75rem;
-}
-
-.audit-table td:nth-child(2),
-.audit-table td:nth-child(3) {
-  text-align: center;
-}
-
-.audit-table tbody tr:hover {
-  background: rgba(99, 102, 241, 0.05);
+.spinner {
+  width: 16px; height: 16px;
+  border: 2px solid var(--border);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+  display: inline-block;
 }

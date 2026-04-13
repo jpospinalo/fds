@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import {
   fetchDocuments,
@@ -10,26 +10,29 @@ import {
 } from "../api/client";
 import { useBackgroundPolling } from "../hooks/useBackgroundPolling";
 
-// ── Helpers de color ───────────────────────────────────────────
-const CALIDAD_MAP: Record<string, { label: string; color: string; bg: string; dot: string }> = {
-  Confiable: { label: "Confiable", color: "#166534", bg: "#dcfce7", dot: "#16a34a" },
-  Conf_CR:   { label: "Con restricciones", color: "#92400e", bg: "#fef3c7", dot: "#d97706" },
-  NO_Conf:   { label: "No confiable", color: "#991b1b", bg: "#fee2e2", dot: "#dc2626" },
+// ── Helpers de color ───────────────────────────────────────────────────────────
+const CALIDAD_MAP: Record<
+  string,
+  { label: string; color: string; bg: string; dot: string }
+> = {
+  Confiable: { label: "Confiable",          color: "#10b981", bg: "rgba(16,185,129,0.12)",  dot: "#10b981" },
+  Conf_CR:   { label: "Con restricciones",  color: "#f59e0b", bg: "rgba(245,158,11,0.12)", dot: "#f59e0b" },
+  NO_Conf:   { label: "No confiable",       color: "#ef4444", bg: "rgba(239,68,68,0.12)",  dot: "#ef4444" },
 };
 
 const PRESENCIA_MAP: Record<string, { color: string; bg: string }> = {
-  Presente:    { color: "#1e40af", bg: "#dbeafe" },
-  No_Presente: { color: "#6b7280", bg: "#f3f4f6" },
+  Presente:    { color: "#60a5fa", bg: "rgba(96,165,250,0.12)" },
+  No_Presente: { color: "var(--text-muted)", bg: "var(--surface-2)" },
 };
 
-function calidad(k: string) {
-  return CALIDAD_MAP[k] ?? { label: k, color: "#6b7280", bg: "#f3f4f6", dot: "#9ca3af" };
+function getCalidad(k: string) {
+  return CALIDAD_MAP[k] ?? { label: k, color: "var(--text-muted)", bg: "var(--surface-2)", dot: "var(--border)" };
 }
-function presencia(k: string) {
-  return PRESENCIA_MAP[k] ?? { color: "#6b7280", bg: "#f3f4f6" };
+function getPresencia(k: string) {
+  return PRESENCIA_MAP[k] ?? { color: "var(--text-muted)", bg: "var(--surface-2)" };
 }
 
-// ── Componente de una sección SGA ─────────────────────────────
+// ── Componente de una sección SGA ─────────────────────────────────────────────
 function SectionCard({ sec }: { sec: AuditSectionResult }) {
   const [open, setOpen] = useState(false);
 
@@ -40,17 +43,15 @@ function SectionCard({ sec }: { sec: AuditSectionResult }) {
   const nc = items.filter((i) => i.calidad === "NO_Conf").length;
   const pct = total > 0 ? Math.round((ok / total) * 100) : null;
 
-  const barColor =
-    pct === null ? "#d1d5db" : pct >= 80 ? "#16a34a" : pct >= 50 ? "#d97706" : "#dc2626";
-
   return (
     <div
       style={{
-        background: "var(--color-background-primary)",
-        border: "0.5px solid var(--color-border-tertiary)",
-        borderRadius: "var(--border-radius-lg)",
+        background: "var(--surface)",
+        border: "1px solid var(--border)",
+        borderRadius: "var(--radius)",
         overflow: "hidden",
-        marginBottom: 8,
+        marginBottom: 6,
+        transition: "border-color 0.15s",
       }}
     >
       {/* Header clickeable */}
@@ -66,6 +67,7 @@ function SectionCard({ sec }: { sec: AuditSectionResult }) {
           display: "flex",
           alignItems: "center",
           gap: 12,
+          borderRadius: 0,
         }}
       >
         {/* Número de sección */}
@@ -74,63 +76,88 @@ function SectionCard({ sec }: { sec: AuditSectionResult }) {
             width: 32,
             height: 32,
             borderRadius: "50%",
-            background: "var(--color-background-secondary)",
+            background: "var(--surface-2)",
+            border: "1px solid var(--border)",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
-            fontSize: 13,
-            fontWeight: 500,
-            color: "var(--color-text-secondary)",
+            fontSize: 12,
+            fontWeight: 600,
+            color: "var(--text-secondary)",
             flexShrink: 0,
           }}
         >
           {sec.seccion}
         </span>
 
-        {/* Barra de progreso + contadores */}
+        {/* Barra de progreso + porcentaje */}
         <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 4 }}>
-            <span style={{ fontSize: 13, fontWeight: 500, color: "var(--color-text-primary)" }}>
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              marginBottom: 5,
+              alignItems: "center",
+            }}
+          >
+            <span
+              style={{
+                fontSize: 13,
+                fontWeight: 500,
+                color: "var(--text)",
+              }}
+            >
               Sección {sec.seccion}
             </span>
             {pct !== null && (
-              <span style={{ fontSize: 12, color: "var(--color-text-secondary)" }}>
-                {pct}% confiable
+              <span
+                style={{
+                  fontSize: 12,
+                  color: "var(--text-secondary)",
+                  marginLeft: 8,
+                }}
+              >
+                {pct}%
+                {sec.puntaje_porcentual !== undefined &&
+                  sec.puntaje_porcentual !== null &&
+                  ` · ${sec.puntaje_porcentual}% puntaje`}
               </span>
             )}
           </div>
           {total > 0 && (
             <div
               style={{
-                height: 6,
+                height: 5,
                 borderRadius: 3,
-                background: "var(--color-background-tertiary)",
+                background: "var(--surface-2)",
                 overflow: "hidden",
                 display: "flex",
               }}
             >
-              <div style={{ width: `${(ok / total) * 100}%`, background: "#16a34a" }} />
-              <div style={{ width: `${(cr / total) * 100}%`, background: "#d97706" }} />
-              <div style={{ width: `${(nc / total) * 100}%`, background: "#dc2626" }} />
+              <div style={{ width: `${(ok / total) * 100}%`, background: "#10b981" }} />
+              <div style={{ width: `${(cr / total) * 100}%`, background: "#f59e0b" }} />
+              <div style={{ width: `${(nc / total) * 100}%`, background: "#ef4444" }} />
             </div>
           )}
         </div>
 
-        {/* Mini badges resumen */}
+        {/* Mini contadores */}
         <div style={{ display: "flex", gap: 4, flexShrink: 0 }}>
-          {ok > 0 && <Dot n={ok} color="#16a34a" />}
-          {cr > 0 && <Dot n={cr} color="#d97706" />}
-          {nc > 0 && <Dot n={nc} color="#dc2626" />}
+          {ok > 0 && <Dot n={ok} color="#10b981" />}
+          {cr > 0 && <Dot n={cr} color="#f59e0b" />}
+          {nc > 0 && <Dot n={nc} color="#ef4444" />}
           {total === 0 && (
-            <span style={{ fontSize: 11, color: "var(--color-text-secondary)" }}>sin datos</span>
+            <span style={{ fontSize: 11, color: "var(--text-muted)" }}>
+              sin datos
+            </span>
           )}
         </div>
 
         {/* Chevron */}
         <span
           style={{
-            fontSize: 12,
-            color: "var(--color-text-secondary)",
+            fontSize: 11,
+            color: "var(--text-muted)",
             transform: open ? "rotate(180deg)" : "none",
             transition: "transform 0.2s",
           }}
@@ -143,15 +170,16 @@ function SectionCard({ sec }: { sec: AuditSectionResult }) {
       {open && (
         <div
           style={{
-            borderTop: "0.5px solid var(--color-border-tertiary)",
+            borderTop: "1px solid var(--border)",
             padding: "0.75rem 1rem",
+            animation: "fadeIn 0.15s ease",
           }}
         >
           {items.length > 0 ? (
-            <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+            <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
               {items.map((item, idx) => {
-                const q = calidad(item.calidad);
-                const p = presencia(item.presencia);
+                const q = getCalidad(item.calidad);
+                const p = getPresencia(item.presencia);
                 return (
                   <div
                     key={idx}
@@ -160,30 +188,37 @@ function SectionCard({ sec }: { sec: AuditSectionResult }) {
                       gridTemplateColumns: "1fr auto auto",
                       alignItems: "center",
                       gap: 8,
-                      padding: "6px 8px",
-                      borderRadius: "var(--border-radius-md)",
-                      background: "var(--color-background-secondary)",
+                      padding: "6px 10px",
+                      borderRadius: "var(--radius-sm)",
+                      background: "var(--surface-2)",
                     }}
                   >
-                    <span style={{ fontSize: 12, color: "var(--color-text-primary)" }}>
+                    <span
+                      style={{
+                        fontSize: 12,
+                        color: "var(--text)",
+                        lineHeight: 1.4,
+                      }}
+                    >
                       {item.item}
                     </span>
                     <span
                       style={{
                         fontSize: 11,
-                        padding: "2px 8px",
+                        padding: "2px 9px",
                         borderRadius: 20,
                         background: p.bg,
                         color: p.color,
                         whiteSpace: "nowrap",
+                        fontWeight: 500,
                       }}
                     >
-                      {item.presencia}
+                      {item.presencia === "Presente" ? "✓ Presente" : "✗ Ausente"}
                     </span>
                     <span
                       style={{
                         fontSize: 11,
-                        padding: "2px 8px",
+                        padding: "2px 9px",
                         borderRadius: 20,
                         background: q.bg,
                         color: q.color,
@@ -191,6 +226,7 @@ function SectionCard({ sec }: { sec: AuditSectionResult }) {
                         alignItems: "center",
                         gap: 4,
                         whiteSpace: "nowrap",
+                        fontWeight: 500,
                       }}
                     >
                       <span
@@ -199,7 +235,7 @@ function SectionCard({ sec }: { sec: AuditSectionResult }) {
                           height: 6,
                           borderRadius: "50%",
                           background: q.dot,
-                          display: "inline-block",
+                          flexShrink: 0,
                         }}
                       />
                       {q.label}
@@ -212,7 +248,7 @@ function SectionCard({ sec }: { sec: AuditSectionResult }) {
             <pre
               style={{
                 fontSize: 11,
-                color: "var(--color-text-secondary)",
+                color: "var(--text-secondary)",
                 whiteSpace: "pre-wrap",
                 fontFamily: "var(--font-mono)",
                 maxHeight: 200,
@@ -220,7 +256,7 @@ function SectionCard({ sec }: { sec: AuditSectionResult }) {
                 margin: 0,
               }}
             >
-              {sec.raw_text || "Sin datos estructurados"}
+              {sec.raw_text || "Sin datos estructurados para esta sección"}
             </pre>
           )}
         </div>
@@ -239,7 +275,7 @@ function Dot({ n, color }: { n: number; color: string }) {
         background: color + "22",
         color,
         fontSize: 11,
-        fontWeight: 500,
+        fontWeight: 600,
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
@@ -251,7 +287,7 @@ function Dot({ n, color }: { n: number; color: string }) {
   );
 }
 
-// ── Página principal ───────────────────────────────────────────
+// ── Página principal ───────────────────────────────────────────────────────────
 export default function Audit() {
   const [params] = useSearchParams();
   const [docs, setDocs] = useState<DocumentInfo[]>([]);
@@ -262,10 +298,11 @@ export default function Audit() {
   const [errorMsg, setErrorMsg] = useState("");
 
   useEffect(() => {
-    fetchDocuments().then(setDocs).catch(() => {});
+    fetchDocuments()
+      .then(setDocs)
+      .catch(() => setErrorMsg("No se pudo conectar con la API"));
   }, []);
 
-  // Callback tipado defensivamente
   const handlePollResult = useCallback((data: { status: string }) => {
     const typed = data as AuditResponse;
     if (typed.status !== "running") {
@@ -288,9 +325,9 @@ export default function Audit() {
     setResult(null);
     try {
       await runAudit(selectedDoc);
-      setPollingId(selectedDoc); // usamos doc_id como "job id" en el auditor
-    } catch (e: unknown) {
-      setErrorMsg("Error al iniciar la auditoría");
+      setPollingId(selectedDoc);
+    } catch {
+      setErrorMsg("Error al iniciar la auditoría. Verifica que la API esté activa.");
     } finally {
       setLoading(false);
     }
@@ -303,42 +340,46 @@ export default function Audit() {
       const r = await getAuditResults(selectedDoc);
       setResult(r);
     } catch {
-      setErrorMsg("No hay auditoría previa para este documento");
+      setErrorMsg(
+        "No hay auditoría previa para este documento. Ejecuta primero 'Ejecutar auditoría'."
+      );
     }
   };
 
-  const downloadTxt = () => {
-    if (!result?.reporte_txt) return;
-    const blob = new Blob([result.reporte_txt], { type: "text/plain" });
+  // ── Descargas ──────────────────────────────────────────────────────────────
+  const dl = (content: string, filename: string, type: string) => {
+    const blob = new Blob([content], { type });
     const url = URL.createObjectURL(blob);
-    Object.assign(document.createElement("a"), {
-      href: url,
-      download: `Auditoria_SGA_${selectedDoc}.txt`,
-    }).click();
+    Object.assign(document.createElement("a"), { href: url, download: filename }).click();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+  };
+
+  const downloadTxt = () => {
+    if (result?.reporte_txt)
+      dl(result.reporte_txt, `Auditoria_SGA_${selectedDoc}.txt`, "text/plain");
+  };
+
+  const downloadCsv = () => {
+    if (result?.reporte_csv)
+      dl(result.reporte_csv, `Auditoria_SGA_${selectedDoc}.csv`, "text/csv;charset=utf-8;");
   };
 
   const downloadMd = () => {
     if (!result) return;
     const secciones = (result.secciones ?? [])
       .map((s) => {
-        const items = (s.items ?? [])
-          .map(
-            (it) =>
-              `| ${it.item} | ${it.presencia} | ${it.calidad} |`
-          )
+        const rows = (s.items ?? [])
+          .map((it) => `| ${it.item} | ${it.presencia} | ${it.calidad} |`)
           .join("\n");
-        return `## Sección ${s.seccion}\n\n| Ítem | Presencia | Calidad |\n|---|---|---|\n${items || "| Sin datos | — | — |"}`;
+        const pct = s.puntaje_porcentual !== undefined ? ` — ${s.puntaje_porcentual}%` : "";
+        return `## Sección ${s.seccion}${pct}\n\n| Ítem | Presencia | Calidad |\n|---|---|---|\n${rows || "| Sin datos | — | — |"}`;
       })
       .join("\n\n---\n\n");
     const md = `# Auditoría SGA — ${result.doc_id}\n\n${secciones}`;
-    const blob = new Blob([md], { type: "text/markdown" });
-    const url = URL.createObjectURL(blob);
-    Object.assign(document.createElement("a"), {
-      href: url,
-      download: `Auditoria_SGA_${selectedDoc}.md`,
-    }).click();
+    dl(md, `Auditoria_SGA_${selectedDoc}.md`, "text/markdown");
   };
 
+  // ── Estado derivado ────────────────────────────────────────────────────────
   const isRunning = pollingId !== null;
   const secciones: AuditSectionResult[] = Array.isArray(result?.secciones)
     ? result!.secciones
@@ -350,18 +391,51 @@ export default function Audit() {
     .filter((i) => i.calidad === "Confiable").length;
   const globalPct = totalItems > 0 ? Math.round((okItems / totalItems) * 100) : null;
 
+  const btnStyle = {
+    padding: "0.45rem 0.9rem",
+    fontSize: 13,
+    background: "var(--surface-2)",
+    border: "1px solid var(--border)",
+    borderRadius: "var(--radius)",
+    cursor: "pointer",
+    color: "var(--text)",
+  };
+
+  const btnPrimaryStyle = {
+    ...btnStyle,
+    background: "var(--accent)",
+    border: "none",
+    color: "#fff",
+    fontWeight: 500,
+  };
+
   return (
     <div style={{ maxWidth: 860 }}>
-      <h1 style={{ fontSize: "1.25rem", marginBottom: "1.5rem", fontWeight: 500 }}>
+      <h1
+        style={{
+          fontSize: "1.2rem",
+          marginBottom: "0.35rem",
+          fontWeight: 600,
+        }}
+      >
         Auditoría SGA
       </h1>
+      <p
+        style={{
+          fontSize: 13,
+          color: "var(--text-secondary)",
+          marginBottom: "1.5rem",
+        }}
+      >
+        Evalúa automáticamente las secciones de una FDS según la normativa SGA.
+      </p>
 
-      {/* Controles */}
+      {/* ── Controles ─────────────────────────────────────────────────────── */}
       <div
         style={{
-          background: "var(--color-background-secondary)",
-          border: "0.5px solid var(--color-border-tertiary)",
-          borderRadius: "var(--border-radius-lg)",
+          background: "var(--surface)",
+          border: "1px solid var(--border)",
+          borderRadius: "var(--radius-lg)",
           padding: "1rem",
           marginBottom: "1.5rem",
           display: "flex",
@@ -386,84 +460,77 @@ export default function Audit() {
             </option>
           ))}
         </select>
+
         <button
           onClick={handleLoadExisting}
           disabled={!selectedDoc}
           style={{
-            padding: "0.45rem 0.9rem",
-            fontSize: 13,
-            background: "var(--color-background-primary)",
-            border: "0.5px solid var(--color-border-secondary)",
-            borderRadius: "var(--border-radius-md)",
+            ...btnStyle,
+            opacity: selectedDoc ? 1 : 0.45,
             cursor: selectedDoc ? "pointer" : "not-allowed",
-            color: "var(--color-text-primary)",
           }}
         >
           Ver existente
         </button>
+
         <button
           onClick={handleRun}
           disabled={!selectedDoc || loading || isRunning}
           style={{
-            padding: "0.45rem 0.9rem",
-            fontSize: 13,
-            background: selectedDoc && !loading && !isRunning ? "#6366f1" : "#d1d5db",
-            color: selectedDoc && !loading && !isRunning ? "#fff" : "#9ca3af",
-            border: "none",
-            borderRadius: "var(--border-radius-md)",
-            cursor: selectedDoc && !loading && !isRunning ? "pointer" : "not-allowed",
+            ...btnPrimaryStyle,
+            opacity: selectedDoc && !loading && !isRunning ? 1 : 0.45,
+            cursor:
+              selectedDoc && !loading && !isRunning ? "pointer" : "not-allowed",
           }}
         >
-          {isRunning ? "Auditando…" : loading ? "Iniciando…" : "Ejecutar auditoría"}
+          {isRunning ? (
+            <>
+              <span className="spinner" /> Auditando…
+            </>
+          ) : loading ? (
+            "Iniciando…"
+          ) : (
+            "Ejecutar auditoría"
+          )}
         </button>
-        {result && (
+
+        {result?.status === "completed" && (
           <>
-            <button
-              onClick={downloadTxt}
-              style={{
-                padding: "0.45rem 0.9rem",
-                fontSize: 13,
-                background: "var(--color-background-primary)",
-                border: "0.5px solid var(--color-border-secondary)",
-                borderRadius: "var(--border-radius-md)",
-                cursor: "pointer",
-                color: "var(--color-text-primary)",
-              }}
-            >
-              ↓ TXT
-            </button>
-            <button
-              onClick={downloadMd}
-              style={{
-                padding: "0.45rem 0.9rem",
-                fontSize: 13,
-                background: "var(--color-background-primary)",
-                border: "0.5px solid var(--color-border-secondary)",
-                borderRadius: "var(--border-radius-md)",
-                cursor: "pointer",
-                color: "var(--color-text-primary)",
-              }}
-            >
+            {result.reporte_txt && (
+              <button onClick={downloadTxt} style={btnStyle}>
+                ↓ TXT
+              </button>
+            )}
+            {result.reporte_csv && (
+              <button onClick={downloadCsv} style={btnStyle}>
+                ↓ CSV
+              </button>
+            )}
+            <button onClick={downloadMd} style={btnStyle}>
               ↓ MD
             </button>
           </>
         )}
       </div>
 
-      {/* Estado de polling */}
+      {/* ── Banner de estado ───────────────────────────────────────────────── */}
       {isRunning && (
         <div
           style={{
             padding: "0.75rem 1rem",
-            background: "#fef3c7",
-            border: "0.5px solid #fde68a",
-            borderRadius: "var(--border-radius-md)",
+            background: "rgba(245,158,11,0.1)",
+            border: "1px solid rgba(245,158,11,0.3)",
+            borderRadius: "var(--radius)",
             fontSize: 13,
-            color: "#92400e",
+            color: "#f59e0b",
             marginBottom: "1rem",
+            display: "flex",
+            alignItems: "center",
+            gap: 8,
           }}
         >
-          ⏳ Auditoría en curso (puedes cambiar de pestaña, seguirá corriendo)…
+          <span className="spinner" />
+          Auditoría en curso (puedes cambiar de pestaña, seguirá corriendo)…
         </div>
       )}
 
@@ -471,11 +538,11 @@ export default function Audit() {
         <div
           style={{
             padding: "0.75rem 1rem",
-            background: "#fee2e2",
-            border: "0.5px solid #fca5a5",
-            borderRadius: "var(--border-radius-md)",
+            background: "var(--error-bg)",
+            border: "1px solid rgba(239,68,68,0.3)",
+            borderRadius: "var(--radius)",
             fontSize: 13,
-            color: "#991b1b",
+            color: "var(--error)",
             marginBottom: "1rem",
           }}
         >
@@ -483,7 +550,7 @@ export default function Audit() {
         </div>
       )}
 
-      {/* Resumen global */}
+      {/* ── Resumen global ─────────────────────────────────────────────────── */}
       {result?.status === "completed" && secciones.length > 0 && (
         <>
           <div
@@ -491,30 +558,39 @@ export default function Audit() {
               display: "grid",
               gridTemplateColumns: "repeat(4, 1fr)",
               gap: 8,
-              marginBottom: "1.5rem",
+              marginBottom: "1.25rem",
             }}
           >
             {[
-              { label: "Secciones evaluadas", value: secciones.length },
-              { label: "Ítems totales", value: totalItems },
-              { label: "Ítems confiables", value: okItems },
+              { label: "Secciones",       value: secciones.length },
+              { label: "Ítems totales",   value: totalItems },
+              { label: "Confiables",      value: okItems },
               {
-                label: "Puntuación global",
+                label: "Puntuación",
                 value: globalPct !== null ? `${globalPct}%` : "—",
               },
             ].map((m) => (
               <div
                 key={m.label}
                 style={{
-                  background: "var(--color-background-secondary)",
-                  borderRadius: "var(--border-radius-md)",
-                  padding: "0.75rem 1rem",
+                  background: "var(--surface)",
+                  border: "1px solid var(--border)",
+                  borderRadius: "var(--radius)",
+                  padding: "0.85rem 1rem",
                 }}
               >
-                <p style={{ fontSize: 11, color: "var(--color-text-secondary)", margin: "0 0 4px" }}>
+                <p
+                  style={{
+                    fontSize: 11,
+                    color: "var(--text-secondary)",
+                    margin: "0 0 4px",
+                    textTransform: "uppercase",
+                    letterSpacing: "0.05em",
+                  }}
+                >
                   {m.label}
                 </p>
-                <p style={{ fontSize: 22, fontWeight: 500, margin: 0 }}>{m.value}</p>
+                <p style={{ fontSize: 22, fontWeight: 600, margin: 0 }}>{m.value}</p>
               </div>
             ))}
           </div>
@@ -526,22 +602,24 @@ export default function Audit() {
               gap: 16,
               marginBottom: "1rem",
               fontSize: 12,
-              color: "var(--color-text-secondary)",
+              color: "var(--text-secondary)",
             }}
           >
             {[
-              { color: "#16a34a", label: "Confiable" },
-              { color: "#d97706", label: "Con restricciones" },
-              { color: "#dc2626", label: "No confiable" },
+              { color: "#10b981", label: "Confiable" },
+              { color: "#f59e0b", label: "Con restricciones" },
+              { color: "#ef4444", label: "No confiable" },
             ].map((l) => (
-              <span key={l.label} style={{ display: "flex", alignItems: "center", gap: 4 }}>
+              <span
+                key={l.label}
+                style={{ display: "flex", alignItems: "center", gap: 5 }}
+              >
                 <span
                   style={{
-                    width: 10,
-                    height: 10,
+                    width: 8,
+                    height: 8,
                     borderRadius: "50%",
                     background: l.color,
-                    display: "inline-block",
                   }}
                 />
                 {l.label}
@@ -550,15 +628,18 @@ export default function Audit() {
           </div>
 
           {/* Cards por sección */}
-          {secciones.map((s) => (
-            <SectionCard key={s.seccion} sec={s} />
-          ))}
+          <div className="animate-fade-in">
+            {secciones.map((s) => (
+              <SectionCard key={s.seccion} sec={s} />
+            ))}
+          </div>
         </>
       )}
 
       {result?.status === "error" && (
-        <p style={{ color: "#dc2626", fontSize: 13 }}>
-          Error: {(result as Record<string, unknown>).detail as string}
+        <p style={{ color: "var(--error)", fontSize: 13 }}>
+          Error en la auditoría:{" "}
+          {result.detail || "Error desconocido. Revisa los logs del backend."}
         </p>
       )}
     </div>

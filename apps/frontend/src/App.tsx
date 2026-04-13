@@ -18,64 +18,84 @@ export default function App() {
   return (
     <BrowserRouter>
       <div style={{ display: "flex", minHeight: "100vh" }}>
+        {/* ── Sidebar de navegación ── */}
         <nav
           style={{
-            width: 200,
-            background: "var(--color-background-secondary)",
-            borderRight: "0.5px solid var(--color-border-tertiary)",
+            width: 210,
+            background: "var(--surface)",
+            borderRight: "1px solid var(--border)",
             padding: "1.5rem 0.75rem",
             display: "flex",
             flexDirection: "column",
             gap: "2px",
             flexShrink: 0,
+            position: "sticky",
+            top: 0,
+            height: "100vh",
+            overflowY: "auto",
           }}
         >
+          {/* Logo / título */}
           <div
             style={{
               fontSize: 11,
-              fontWeight: 500,
-              color: "var(--color-text-secondary)",
-              letterSpacing: "0.08em",
-              marginBottom: "1rem",
+              fontWeight: 700,
+              color: "var(--text-secondary)",
+              letterSpacing: "0.1em",
+              textTransform: "uppercase",
+              marginBottom: "1.25rem",
               paddingLeft: "0.75rem",
             }}
           >
             RAG FDS / SGA
           </div>
+
           {NAV.map((item) => (
             <NavLink
               key={item.to}
               to={item.to}
               end={item.exact}
               style={({ isActive }) => ({
-                padding: "0.45rem 0.75rem",
-                borderRadius: "var(--border-radius-md)",
+                padding: "0.5rem 0.75rem",
+                borderRadius: "var(--radius)",
                 fontSize: 13,
-                color: isActive
-                  ? "var(--color-text-primary)"
-                  : "var(--color-text-secondary)",
-                background: isActive
-                  ? "var(--color-background-primary)"
-                  : "transparent",
-                fontWeight: isActive ? 500 : 400,
+                color: isActive ? "var(--text)" : "var(--text-secondary)",
+                background: isActive ? "var(--surface-2)" : "transparent",
+                fontWeight: isActive ? 600 : 400,
                 textDecoration: "none",
                 border: isActive
-                  ? "0.5px solid var(--color-border-tertiary)"
-                  : "0.5px solid transparent",
-                transition: "all 0.1s",
+                  ? "1px solid var(--border)"
+                  : "1px solid transparent",
+                transition: "all 0.12s",
+                display: "block",
               })}
             >
               {item.label}
             </NavLink>
           ))}
+
+          {/* Footer del sidebar */}
+          <div
+            style={{
+              marginTop: "auto",
+              paddingTop: "1rem",
+              paddingLeft: "0.75rem",
+              fontSize: 11,
+              color: "var(--text-muted)",
+            }}
+          >
+            v1.0.0
+          </div>
         </nav>
 
+        {/* ── Contenido principal ── */}
         <main
           style={{
             flex: 1,
-            padding: "2rem",
+            padding: "2rem 2.5rem",
             overflowY: "auto",
-            background: "var(--color-background-tertiary)",
+            background: "var(--bg)",
+            minWidth: 0,
           }}
         >
           <Routes>

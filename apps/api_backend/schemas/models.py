@@ -2,7 +2,7 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel
 
-# ── Búsqueda ──────────────────────────────────────────────────
+# ── Búsqueda ──────────────────────────────────────────────────────────────────
 class SearchRequest(BaseModel):
     query: str
     doc_id: Optional[str] = None
@@ -18,20 +18,20 @@ class SearchResponse(BaseModel):
     resultados: List[SearchResult]
     total: int
 
-# ── Documentos ────────────────────────────────────────────────
+# ── Documentos ────────────────────────────────────────────────────────────────
 class DocumentInfo(BaseModel):
     doc_id: str
     secciones_disponibles: List[int]
     total_chunks: int
 
-# ── Auditoría ─────────────────────────────────────────────────
+# ── Auditoría ─────────────────────────────────────────────────────────────────
 class AuditRequest(BaseModel):
     doc_id: str
 
 class AuditItemResult(BaseModel):
     item: str
-    calidad: str          # Confiable | Conf_CR | NO_Conf
-    presencia: str        # Presente | No_Presente
+    calidad: str           # "Confiable" | "Conf_CR" | "NO_Conf"
+    presencia: str         # "Presente" | "No_Presente"
     observaciones: Optional[str] = None
 
 class AuditSectionResult(BaseModel):
@@ -43,11 +43,13 @@ class AuditSectionResult(BaseModel):
 
 class AuditResponse(BaseModel):
     doc_id: str
-    status: str           # completed | running | error
+    status: str            # "completed" | "running" | "error"
     secciones: List[AuditSectionResult]
     reporte_txt: Optional[str] = None
+    reporte_csv: Optional[str] = None   # ← AÑADIDO: faltaba en la definición original
+    detail: Optional[str] = None        # ← para mensajes de error
 
-# ── Conversión ────────────────────────────────────────────────
+# ── Conversión ────────────────────────────────────────────────────────────────
 class ConvertRequest(BaseModel):
     texto: str
     nombre_archivo: Optional[str] = "documento"
