@@ -1,6 +1,15 @@
 import { useEffect, useState } from "react";
-import { fetchDocuments, DocumentInfo } from "../api/client";
+import { fetchDocuments, DocumentInfo, SeccionEstado } from "../api/client";
 import { useNavigate } from "react-router-dom";
+
+const ESTADO_COLOR: Record<SeccionEstado, { bg: string; border: string; text: string }> = {
+  sin_auditoria: { bg: "var(--surface-2)",           border: "var(--border)",              text: "var(--text-muted)" },
+  presente:      { bg: "rgba(16,185,129,0.12)",       border: "rgba(16,185,129,0.35)",      text: "#10b981" },
+  incompleta:    { bg: "rgba(245,158,11,0.12)",       border: "rgba(245,158,11,0.35)",      text: "#f59e0b" },
+  no_presente:   { bg: "rgba(239,68,68,0.07)",        border: "rgba(239,68,68,0.2)",        text: "#ef4444" },
+};
+
+const TOTAL_SECCIONES = 16;
 
 export default function Home() {
   const [docs, setDocs] = useState<DocumentInfo[]>([]);
@@ -124,28 +133,47 @@ export default function Home() {
                 {doc.secciones_disponibles.length} secciones · {doc.total_chunks} chunks
               </p>
 
-              {/* Tags de secciones */}
+              {/* Badges de estado de las 16 secciones */}
               <div
                 style={{
                   display: "flex",
                   flexWrap: "wrap",
-                  gap: 4,
+                  gap: 3,
                   marginBottom: "0.9rem",
                 }}
               >
-                {doc.secciones_disponibles.map((s) => (
-                  <span
-                    key={s}
-                    style={{
-                      fontSize: 11,
-                      padding: "1px 6px",
-                      background: "var(--surface-2)",
-                      borderRadius: "var(--radius-sm)",
-                      border: "1px solid var(--border)",
-                      color: "var(--text-secondary)",
-                    }}
-                  >
-                    §{s}
+                {Array.from({ length: TOTAL_SECCIONES }, (_, i) => i + 1).map((s) => {
+                  const estado: SeccionEstado =
+                    doc.secciones_estado?.[String(s)] ?? "no_presente";
+                  const c = ESTADO_COLOR[estado];
+                  return (
+                    <span
+                      key={s}
+                      title={`§${s} — ${estado.replace("_", " ")}`}
+                      style={{
+                        fontSize: 10,
+                        fontWeight: 600,
+                        padding: "1px 5px",
+                        borderRadius: "var(--radius-sm)",
+                        background: c.bg,
+                        border: `1px solid ${c.border}`,
+                        color: c.text,
+                        fontFamily: "var(--font-mono)",
+                        cursor: "default",
+                      }}
+                    >
+                      {s}
+                    </span>
+                  );
+                })}
+              </div>
+
+              {/* Leyenda compacta */}
+              <div style={{ display: "flex", gap: 10, marginBottom: "0.75rem", fontSize: 10, color: "var(--text-muted)" }}>
+                {(["sin_auditoria", "presente", "incompleta", "no_presente"] as SeccionEstado[]).map((e) => (
+                  <span key={e} style={{ display: "flex", alignItems: "center", gap: 3 }}>
+                    <span style={{ width: 7, height: 7, borderRadius: 2, background: ESTADO_COLOR[e].text, border: `1px solid ${ESTADO_COLOR[e].border}`, flexShrink: 0 }} />
+                    {e.replace(/_/g, " ")}
                   </span>
                 ))}
               </div>

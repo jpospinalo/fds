@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import {
   fetchDocuments,
+  fetchSectionContent,
   runAudit,
   getAuditResults,
   AuditResponse,
@@ -258,8 +259,28 @@ function CheckRow({
 }
 
 // ── Section accordion card ───────────────────────────────────────────────────
-function SectionChecklist({ sec }: { sec: AuditSectionResult }) {
+function SectionChecklist({ sec, docId }: { sec: AuditSectionResult; docId: string }) {
   const [open, setOpen] = useState(true);
+  const [showContent, setShowContent] = useState(false);
+  const [sectionText, setSectionText] = useState<string | null>(null);
+  const [contentLoading, setContentLoading] = useState(false);
+  const [contentError, setContentError] = useState("");
+
+  const handleToggleContent = async () => {
+    if (showContent) { setShowContent(false); return; }
+    setShowContent(true);
+    if (sectionText !== null) return;
+    setContentLoading(true);
+    setContentError("");
+    try {
+      const res = await fetchSectionContent(docId, sec.seccion);
+      setSectionText(res.contenido || "(Sección sin contenido)");
+    } catch {
+      setContentError("No se pudo cargar el contenido de esta sección.");
+    } finally {
+      setContentLoading(false);
+    }
+  };
 
   const items = sec.items ?? [];
   // Exclude the "title" item (x_0) from the count metrics
@@ -399,6 +420,48 @@ function SectionChecklist({ sec }: { sec: AuditSectionResult }) {
         </svg>
       </button>
 
+      {/* Botón ver contenido */}
+      <button
+        onClick={(e) => { e.stopPropagation(); handleToggleContent(); }}
+        style={{
+          margin: "0 10px 8px auto",
+          display: "block",
+          fontSize: 11,
+          padding: "3px 10px",
+          background: showContent ? "rgba(99,102,241,0.12)" : "var(--surface-2)",
+          border: `1px solid ${showContent ? "rgba(99,102,241,0.4)" : "var(--border)"}`,
+          borderRadius: "var(--radius-sm)",
+          color: showContent ? "#6366f1" : "var(--text-secondary)",
+          cursor: "pointer",
+        }}
+      >
+        {showContent ? "Ocultar contenido" : "Ver contenido §" + sec.seccion}
+      </button>
+
+      {/* Panel de contenido de la sección */}
+      {showContent && (
+        <div
+          style={{
+            margin: "0 10px 10px",
+            padding: "10px 12px",
+            background: "var(--surface-2)",
+            border: "1px solid var(--border)",
+            borderRadius: "var(--radius-sm)",
+            fontSize: 12,
+            lineHeight: 1.7,
+            color: "var(--text-secondary)",
+            maxHeight: 320,
+            overflowY: "auto",
+            whiteSpace: "pre-wrap",
+            wordBreak: "break-word",
+          }}
+        >
+          {contentLoading && <span style={{ color: "var(--text-muted)" }}>Cargando…</span>}
+          {contentError && <span style={{ color: "var(--error)" }}>{contentError}</span>}
+          {!contentLoading && !contentError && sectionText}
+        </div>
+      )}
+
       {/* Checklist body */}
       {open && items.length > 0 && (
         <div style={{ borderTop: "1px solid var(--border)" }}>
@@ -492,48 +555,86 @@ export default function Audit() {
   const dl = (content: string, filename: string, type: string) => {
     const blob = new Blob([content], { type });
     const url = URL.createObjectURL(blob);
-    Object.assign(document.createElement("a"), {
-      href: url,
-      download: filename,
-    }).click();
+    Object.assign(document.createElement("a"), { href: url, download: filename }).click();
     setTimeout(() => URL.revokeObjectURL(url), 1000);
   };
 
+  // Filas ordenadas: sección asc, luego por ID numérico de ítem
+  const buildRows = () =>
+    (result?.secciones ?? [])
+      .slice()
+      .sort((a, b) => a.seccion - b.seccion)
+      .flatMap((s) =>
+        (s.items ?? []).map((it) => ({
+          seccion: s.seccion,
+          nombreSeccion: SECTION_NAMES[s.seccion] ?? `Sección ${s.seccion}`,
+          id: getItemKey(it.item),
+          descripcion: getItemDescription(it.item),
+          presente: it.presencia === "Presente",
+        }))
+      );
+
   const downloadTxt = () => {
-    if (result?.reporte_txt)
-      dl(result.reporte_txt, `Auditoria_SGA_${selectedDoc}.txt`, "text/plain");
+    if (!result) return;
+    const rows = buildRows();
+    const COL = [6, 36, 10, 46, 12] as const;
+    const pad = (s: string, n: number) => s.slice(0, n).padEnd(n);
+    const sep = COL.map((n) => "-".repeat(n)).join("-+-") + "-+";
+    const header =
+      pad("§", COL[0]) + " | " +
+      pad("Sección", COL[1]) + " | " +
+      pad("ID", COL[2]) + " | " +
+      pad("Descripción", COL[3]) + " | " +
+      pad("Presencia", COL[4]) + " |";
+    const lines = [
+      `AUDITORÍA SGA — ${result.doc_id}`,
+      `Generado: ${new Date().toLocaleString("es-CO")}`,
+      "",
+      header,
+      sep,
+      ...rows.map((r) =>
+        pad(String(r.seccion), COL[0]) + " | " +
+        pad(r.nombreSeccion, COL[1]) + " | " +
+        pad(r.id, COL[2]) + " | " +
+        pad(r.descripcion, COL[3]) + " | " +
+        pad(r.presente ? "Presente" : "No presente", COL[4]) + " |"
+      ),
+    ];
+    dl(lines.join("\n"), `Auditoria_SGA_${selectedDoc}.txt`, "text/plain;charset=utf-8;");
   };
 
   const downloadCsv = () => {
-    if (result?.reporte_csv)
-      dl(
-        result.reporte_csv,
-        `Auditoria_SGA_${selectedDoc}.csv`,
-        "text/csv;charset=utf-8;"
-      );
+    if (!result) return;
+    const rows = buildRows();
+    const esc = (s: string) => `"${s.replace(/"/g, '""')}"`;
+    const lines = [
+      ["Sección", "Nombre sección", "ID", "Descripción", "Presencia"].map(esc).join(","),
+      ...rows.map((r) =>
+        [String(r.seccion), r.nombreSeccion, r.id, r.descripcion,
+          r.presente ? "Presente" : "No presente"].map(esc).join(",")
+      ),
+    ];
+    dl(lines.join("\n"), `Auditoria_SGA_${selectedDoc}.csv`, "text/csv;charset=utf-8;");
   };
 
   const downloadMd = () => {
     if (!result) return;
-    const secciones = (result.secciones ?? [])
-      .map((s) => {
-        const rows = (s.items ?? [])
-          .map(
-            (it) =>
-              `| ${getItemKey(it.item)} | ${getItemDescription(it.item)} | ${
-                it.presencia
-              } |`
-          )
-          .join("\n");
-        return `## Sección ${s.seccion} — ${
-          SECTION_NAMES[s.seccion] ?? ""
-        }\n\n| ID | Descripción | Presencia |\n|---|---|---|\n${
-          rows || "| — | Sin datos | — |"
-        }`;
-      })
-      .join("\n\n---\n\n");
-    const md = `# Auditoría SGA — ${result.doc_id}\n\n${secciones}`;
-    dl(md, `Auditoria_SGA_${selectedDoc}.md`, "text/markdown");
+    const rows = buildRows();
+    // Agrupar por sección para generar una tabla por sección
+    const porSeccion = new Map<number, typeof rows>();
+    rows.forEach((r) => {
+      if (!porSeccion.has(r.seccion)) porSeccion.set(r.seccion, []);
+      porSeccion.get(r.seccion)!.push(r);
+    });
+    const bloques = [...porSeccion.entries()].map(([num, items]) => {
+      const nombre = SECTION_NAMES[num] ?? `Sección ${num}`;
+      const filas = items
+        .map((r) => `| ${r.id} | ${r.descripcion} | ${r.presente ? "✅ Presente" : "❌ No presente"} |`)
+        .join("\n");
+      return `## Sección ${num} — ${nombre}\n\n| ID | Descripción | Presencia |\n|---|---|---|\n${filas || "| — | Sin datos | — |"}`;
+    });
+    const md = `# Auditoría SGA — ${result.doc_id}\n\n_Generado: ${new Date().toLocaleString("es-CO")}_\n\n---\n\n${bloques.join("\n\n---\n\n")}`;
+    dl(md, `Auditoria_SGA_${selectedDoc}.md`, "text/markdown;charset=utf-8;");
   };
 
   // Derived state
@@ -880,7 +981,7 @@ export default function Audit() {
 
           {/* Per-section checklists */}
           {secciones.map((s) => (
-            <SectionChecklist key={s.seccion} sec={s} />
+            <SectionChecklist key={s.seccion} sec={s} docId={selectedDoc} />
           ))}
         </div>
       )}

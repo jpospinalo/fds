@@ -12,6 +12,10 @@ dist
 dist-ssr
 *.local
 
+# Env con valores reales (production tiene IP/claves)
+.env.production
+.env.local
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json

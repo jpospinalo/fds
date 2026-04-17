@@ -17,6 +17,8 @@ ROOT = Path(__file__).resolve().parent.parent.parent
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
+from api_backend.cache import audit_store
+
 router = APIRouter(prefix="/audit", tags=["Auditoría SGA"])
 
 _audit_cache: Dict[str, dict] = {}
@@ -184,7 +186,9 @@ def run_audit(doc_id: str, background_tasks: BackgroundTasks):
             with open(reporte_path, "r", encoding="utf-8") as f:
                 raw = f.read()
             resultado = _parse_audit_report(raw, doc_id)
-            _audit_cache[doc_id] = resultado.dict()
+            data = resultado.dict()
+            _audit_cache[doc_id] = data
+            audit_store.save(doc_id, data)
         except Exception as e:
             _audit_cache[doc_id] = {
                 "status": "error",
@@ -204,22 +208,36 @@ def run_audit(doc_id: str, background_tasks: BackgroundTasks):
 def get_audit_results(doc_id: str):
     from api_backend.config import Config
 
-    report_path = (
-        Config.DATA_DIR / "evaluation_reports" / f"Checklist_SGA_{doc_id}.txt"
-    )
+    # 1. Memoria (en curso o ya completado en esta sesión)
+    if doc_id in _audit_cache and _audit_cache[doc_id].get("status") != "running":
+        cached = _audit_cache[doc_id]
+        # Re-adjuntar reporte_txt desde disco si falta
+        if not cached.get("reporte_txt"):
+            report_path = Config.DATA_DIR / "evaluation_reports" / f"Checklist_SGA_{doc_id}.txt"
+            if report_path.exists():
+                cached["reporte_txt"] = report_path.read_text(encoding="utf-8")
+        return cached
 
-    # Siempre re-parsear desde archivo para garantizar que el parser actualizado
-    # se aplique incluso a reportes generados anteriormente.
+    # 2. SQLite
+    stored = audit_store.load(doc_id)
+    if stored and stored.get("status") == "completed":
+        report_path = Config.DATA_DIR / "evaluation_reports" / f"Checklist_SGA_{doc_id}.txt"
+        if report_path.exists():
+            stored["reporte_txt"] = report_path.read_text(encoding="utf-8")
+        _audit_cache[doc_id] = stored
+        return stored
+
+    # 3. Archivo TXT legacy (re-parsear y guardar en SQLite)
+    report_path = Config.DATA_DIR / "evaluation_reports" / f"Checklist_SGA_{doc_id}.txt"
     if report_path.exists():
-        with open(report_path, "r", encoding="utf-8") as f:
-            raw = f.read()
+        raw = report_path.read_text(encoding="utf-8")
         result = _parse_audit_report(raw, doc_id)
-        _audit_cache[doc_id] = result.dict()
+        data = result.dict()
+        _audit_cache[doc_id] = data
+        audit_store.save(doc_id, data)
+        return data
 
-    if doc_id not in _audit_cache:
-        raise HTTPException(
-            status_code=404,
-            detail="No hay auditoría disponible para este documento. Ejecuta primero POST /audit/{doc_id}",
-        )
-
-    return _audit_cache[doc_id]
+    raise HTTPException(
+        status_code=404,
+        detail="No hay auditoría disponible para este documento. Ejecuta primero POST /audit/{doc_id}",
+    )

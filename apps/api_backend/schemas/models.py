@@ -23,6 +23,7 @@ class DocumentInfo(BaseModel):
     doc_id: str
     secciones_disponibles: List[int]
     total_chunks: int
+    secciones_estado: Dict[str, str] = {}  # "1"…"16" → "presente"|"incompleta"|"no_presente"
 
 # ── Auditoría ─────────────────────────────────────────────────────────────────
 class AuditRequest(BaseModel):
