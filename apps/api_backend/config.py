@@ -25,11 +25,26 @@ class Config:
     S3_PREFIX_GOLD = "gold/"
     S3_PREFIX_QUARANTINE = "Quarantine/"
     
+    # --- PROVEEDOR DE EMBEDDINGS ---
+    # Puede ser 'azure' u 'ollama'
+    EMBEDDINGS_PROVIDER = os.getenv("EMBEDDINGS_PROVIDER", "azure")
+
+    # --- CONFIGURACIÓN OLLAMA ---
+    OLLAMA_BASE_URL = os.getenv("OLLAMA_BASE_URL", "http://localhost:11434")
+    OLLAMA_EMBEDDINGS_MODEL = os.getenv("OLLAMA_EMBEDDINGS_MODEL", "nomic-embed-text")
+    
+    
     # Credenciales Azure OpenAI (Embeddings)
+    EMBEDDINGS_PROVIDER = os.getenv("EMBEDDINGS_PROVIDER", "azure")
     AZURE_OPENAI_API_KEY = os.getenv("AZURE_OPENAI_API_KEY")
     AZURE_OPENAI_ENDPOINT = os.getenv("AZURE_OPENAI_ENDPOINT")
     AZURE_OPENAI_API_VERSION = os.getenv("AZURE_OPENAI_API_VERSION")
     AZURE_OPENAI_EMBEDDINGS_DEPLOYMENT = os.getenv("AZURE_OPENAI_EMBEDDINGS_DEPLOYMENT")
+    
+    
+    # --- CONFIGURACIÓN OLLAMA ---
+    OLLAMA_BASE_URL = os.getenv("OLLAMA_BASE_URL", "http://localhost:11434")
+    OLLAMA_EMBEDDINGS_MODEL = os.getenv("OLLAMA_EMBEDDINGS_MODEL", "nomic-embed-text")
     
     # Credenciales Google (Gemini / Gemma)
     GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")
