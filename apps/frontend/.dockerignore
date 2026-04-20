@@ -1,0 +1,25 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.venv
+venv/
+env/
+
+# Datos y Cache local
+data/
+.env
+
+# Git
+.git
+.gitignore
+
+# Documentación
+docs/
+
+
+node_modules/
+dist/
+.env
+.git
