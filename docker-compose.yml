@@ -1,0 +1,61 @@
+services:
+  # ==========================================
+  # 1. Backend API (FastAPI)
+  # ==========================================
+  api_backend:
+    build:
+      context: .
+      dockerfile: apps/api_backend/Dockerfile
+    container_name: rag_fds_backend
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+    volumes:
+      - ./apps:/app/apps
+      - ./data:/app/data
+    restart: unless-stopped
+
+  # ==========================================
+  # 2. Frontend Web (React + Vite)
+  # ==========================================
+  frontend:
+    build:
+      context: ./apps/frontend
+      dockerfile: Dockerfile.dev # Usa Dockerfile.dev para desarrollo
+    container_name: rag_fds_frontend
+    ports:
+      - "5173:5173"
+    env_file:
+      - .env
+    develop:
+      watch:
+        - action: sync
+          path: ./apps/frontend/src
+          target: /app/src
+          ignore:
+            - node_modules/
+        - action: rebuild
+          path: ./apps/frontend/package.json
+          target: /app/package.json
+        - action: rebuild
+          path: ./apps/frontend/vite.config.ts
+          target: /app/vite.config.ts
+    depends_on:
+      - api_backend
+    restart: unless-stopped
+
+  # ==========================================
+  # 3. Base de Datos Vectorial (ChromaDB) - Opcional
+  # ==========================================
+  # chromadb_local:
+  #   image: chromadb/chroma:latest
+  #   container_name: rag_fds_chroma
+  #   ports:
+  #     - "4000:8000"
+  #   volumes:
+  #     - chroma_data:/chroma/chroma
+  #   restart: unless-stopped
+
+# volumes:
+#   chroma_data:

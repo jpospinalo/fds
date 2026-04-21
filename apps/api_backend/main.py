@@ -7,6 +7,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 # CORRECCIÓN: se eliminó la línea duplicada de imports
 from api_backend.routers import documents, search, audit, convert, pipeline
+from api_backend.config import Config
 
 # Agregar raíz del proyecto al path
 ROOT = Path(__file__).resolve().parent.parent
@@ -23,17 +24,12 @@ app = FastAPI(
     openapi_url=f"{API_PREFIX}/openapi.json",
 )
 
-# CORS: permite llamadas desde el frontend Vite (localhost:5173)
-# y desde el host de EC2 si se despliega ahí
+# Parsear los orígenes permitidos desde las variables de entorno
+origins = [origin.strip() for origin in Config.CORS_ORIGINS.split(",") if origin.strip()]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://localhost:5173",
-        "http://localhost:3000",
-        "http://ec2-100-31-49-246.compute-1.amazonaws.com",
-        "http://ec2-100-31-49-246.compute-1.amazonaws.com:5173",
-        "http://ec2-100-31-49-246.compute-1.amazonaws.com:3000",
-    ],
+    allow_origins=origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

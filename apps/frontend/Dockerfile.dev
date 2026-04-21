@@ -1,0 +1,20 @@
+# apps/frontend/Dockerfile.dev
+
+FROM node:18-alpine
+
+WORKDIR /app
+
+# Copiar dependencias primero para aprovechar la caché
+COPY package.json package-lock.json* ./
+
+# Instalar TODAS las dependencias (incluyendo devDependencies)
+RUN npm install
+
+# Copiar el resto del código
+COPY . .
+
+# Exponer el puerto de Vite
+EXPOSE 5173
+
+# Arrancar en modo desarrollo forzando la exposición a la red de Docker
+CMD ["npm", "run", "dev", "--", "--host"]

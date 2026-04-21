@@ -25,6 +25,10 @@ class Config:
     S3_PREFIX_GOLD = "gold/"
     S3_PREFIX_QUARANTINE = "Quarantine/"
     
+    # --- SERVIDOR / API ---
+    # Lista de orígenes permitidos separados por comas para evitar quemar URLs en el CORS
+    CORS_ORIGINS = os.getenv("CORS_ORIGINS", "http://localhost:5173,http://localhost:3000")
+    
     # --- PROVEEDOR DE EMBEDDINGS ---
     # Puede ser 'azure' u 'ollama'
     EMBEDDINGS_PROVIDER = os.getenv("EMBEDDINGS_PROVIDER", "azure")
@@ -41,10 +45,6 @@ class Config:
     AZURE_OPENAI_API_VERSION = os.getenv("AZURE_OPENAI_API_VERSION")
     AZURE_OPENAI_EMBEDDINGS_DEPLOYMENT = os.getenv("AZURE_OPENAI_EMBEDDINGS_DEPLOYMENT")
     
-    
-    # --- CONFIGURACIÓN OLLAMA ---
-    OLLAMA_BASE_URL = os.getenv("OLLAMA_BASE_URL", "http://localhost:11434")
-    OLLAMA_EMBEDDINGS_MODEL = os.getenv("OLLAMA_EMBEDDINGS_MODEL", "nomic-embed-text")
     
     # Credenciales Google (Gemini / Gemma)
     GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")
