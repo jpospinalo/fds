@@ -5,10 +5,10 @@ services:
   frontend:
     build:
       context: ./apps/frontend
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile 
     container_name: rag_fds_frontend_prod
     ports:
       - "80:80"
     env_file:
-      - .env
+      - ./apps/frontend/.env
     restart: unless-stopped
