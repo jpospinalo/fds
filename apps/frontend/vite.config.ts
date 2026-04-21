@@ -3,6 +3,7 @@ import react from "@vitejs/plugin-react";
 
 export default defineConfig(({ mode }) => {
   // Carga las variables de entorno basándose en el modo actual (.env, .env.development, etc.)
+  // @ts-ignore
   const env = loadEnv(mode, process.cwd(), "");
   
   // Si existe VITE_API_URL en tu .env lo utiliza, sino usa el localhost por defecto
