@@ -30,9 +30,9 @@ app.add_middleware(
     allow_origins=[
         "http://localhost:5173",
         "http://localhost:3000",
-        "http://ec2-18-232-93-236.compute-1.amazonaws.com",
-        "http://ec2-18-232-93-236.compute-1.amazonaws.com:5173",
-        "http://ec2-18-232-93-236.compute-1.amazonaws.com:3000",
+        "http://ec2-100-31-49-246.compute-1.amazonaws.com",
+        "http://ec2-100-31-49-246.compute-1.amazonaws.com:5173",
+        "http://ec2-100-31-49-246.compute-1.amazonaws.com:3000",
     ],
     allow_credentials=True,
     allow_methods=["*"],
