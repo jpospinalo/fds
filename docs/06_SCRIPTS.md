@@ -49,7 +49,9 @@ Este script está pensado para ejecutarse **exclusivamente dentro de la instanci
    chmod +x setup_chromadb.sh
    ./setup_chromadb.sh
    ```
-*(Nota: Nunca ejecutes este archivo en tu máquina Windows / Mac local, pues intentará configurar demonios de Linux remotos).*
+
+>[!NOTE]
+>*Nunca ejecutes este archivo en tu máquina Windows / Mac local, pues intentará configurar demonios de Linux remotos*
 
 ---
 
