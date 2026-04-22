@@ -6,7 +6,7 @@ Plataforma Full-Stack impulsada por Inteligencia Artificial para la ingesta, vec
 
 ## Estado Actual de Desarrollo
 
-**Limitación Conocida (En progreso):** La subida de archivos (Upload) desde el Frontend hacia el Backend se encuentra deshabilitada temporalmente. El sistema opera con documentos pre-cargados en la carpeta `data/`.
+El sistema permite la carga de documentos desde el Frontend, interactuando con los endpoints correspondientes en el backend para la ingesta, extracción, vectorización y auditoría automática usando el pipeline medallón.
 
 ---
 
@@ -29,6 +29,9 @@ Hemos estructurado la documentación paso a paso para facilitar la integración 
 5. **[Configuración de Azure Embeddings](./docs/05_AZURE_EMBEDDINGS.md)**
    * Tutorial paso a paso para crear y configurar el servicio de vectorización de texto en Azure OpenAI.
 
+6. **[Guía de Scripts e Infraestructura](./docs/06_SCRIPTS.md)**
+   * Detalles sobre los automatismos en Bash para configurar AWS (S3, EC2, Load Balancers), ChromaDB remoto, pipeline ECR y servicios de ECS Fargate.
+
 ---
 
 ## Stack Tecnológico Resumido
@@ -36,4 +39,4 @@ Hemos estructurado la documentación paso a paso para facilitar la integración 
 * **IA & Datos:** LangChain, ChromaDB, Azure OpenAI, Google Gemini 2.5 Flash, Docling.
 * **Backend:** Python 3.10+, FastAPI, Uvicorn, Pydantic.
 * **Frontend:** React, TypeScript, Vite.
-* **Infraestructura:** AWS (EC2, S3, Cloud9).
+* **Infraestructura:** AWS (EC2, S3, Cloud9, ECR, ECS Fargate).
