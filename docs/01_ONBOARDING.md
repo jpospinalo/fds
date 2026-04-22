@@ -102,10 +102,10 @@ CHROMA_SERVER_PORT=puerto_del_chroma
 
 ### Frontend (`apps/frontend/.env`)
 
-Para que el frontend pueda comunicarse con la API en la nube de forma estática, crea un archivo `.env` dentro de la carpeta `apps/frontend/` con el DNS del Load Balancer obtenido en el paso 2:
+Para que el frontend pueda comunicarse con la API en la nube de forma estática, crea un archivo `.env` dentro de la carpeta `apps/frontend/` con el DNS del Load Balancer (o `http://localhost:8000` si es local):
 
 ```env
-# DNS del Application Load Balancer (No incluir el puerto 8000)
+# DNS del Application Load Balancer (o entorno local localhost:8000)
 VITE_API_URL=http://<ALB_DNS_URL>
 ```
 

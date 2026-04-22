@@ -171,39 +171,19 @@ CHROMA_SERVER_PORT=4000
 * Sistema LLM-as-a-Judge para auditoría automática
 
 **Limitaciones Actuales (Trabajo en Progreso):**
-* **Ejecución Manual:** El pipeline se ejecuta manualmente desde Jupyter Notebooks (`/notebooks/`) ubicados en `bronce2silver_seccion*.ipynb` y `01_gold_chunking.ipynb`. No hay integración automática ni mensajería asíncrona.
-* **Upload de Archivos:** El frontend no implementa carga de PDFs. Los PDFs deben estar en S3 previamente.
-* **Sin APIs de Disparo:** No existen endpoints REST para disparar el pipeline desde la API. Los comandos se ejecutan manualmente.
+* **Ejecución Manual:** Parte del pipeline medallón aún se puede estudiar en notebooks de demostración, pero **se recomienda usar los Endpoints REST** y la interfaz Web para interactuar con la ingesta y vectorización real.
 * **Caché Local:** Los reportes de auditoría se guardan localmente en `data/evaluation_reports/` para descargas rápidas, pero deberían migrarse a S3 en futuras versiones.
 
-## 8. Flujo de Ejecución Actual
+## 8. Flujo de Ejecución Actual (Vía API y Web)
 
 ```
-1. Desarrollador coloca PDF en S3 (s3://bucket/docs/)
+1. Desarrollador sube PDF a través del Frontend (Upload)
                     ↓
-2. Ejecuta Notebook: bronce2silver_seccion1.ipynb → docling_loader.py
+2. Llama al endpoint de Pipeline en FastAPI
    - Descarga PDF a local temp
-   - Procesa con Docling
-   - Sube resultado a s3://bucket/bronze/processed/
+   - Procesa con Docling (Capa Bronce)
+   - Extrae 16 secciones (Capa Plata) y realiza el Fallback a LLM de ser necesario.
+   - Aplica vectorización semántica (Capa Oro) hacia ChromaDB
                     ↓
-3. Ejecuta Notebook: bronce2silver_seccionX.ipynb → silver_runner.py
-   - Lee desde S3 (Bronce)
-   - Extrae 16 secciones (Regex + LLM fallback)
-   - Sube a s3://bucket/silver/seccion_X/
-                    ↓
-4. Ejecuta Notebook: 01_gold_chunking.ipynb → splitter.py
-   - Agrega secciones desde S3 (Plata)
-   - Chunking semántico
-   - Sube a s3://bucket/gold/chunks/
-   - Ingesta vectores en ChromaDB (EC2)
-                    ↓
-5. Frontend/API ya pueden consultar docentes disponibles y realizar búsquedas
+3. Frontend/API ya pueden consultar documentos disponibles, buscar semánticamente y auditar automáticamente.
 ```
-
-## 9. Próximos Pasos Recomendados
-
-1. **Automatización:** Crear lambdas de AWS o Airflow DAGs para ejecutar el pipeline automáticamente.
-2. **Upload de Archivos:** Implementar endpoint POST `/upload/` en API backend que coloque PDFs en S3 y dispare el pipeline.
-3. **Monitoreo:** Implementar logging centralizado y health checks para el pipeline.
-4. **Persistencia de Reportes:** Mover auditorías a S3 en lugar de local (actualmente caché).
-5. **Escalabilidad:** Cambiar notebooks a scripts Python ejecutables con argumentos CLI.

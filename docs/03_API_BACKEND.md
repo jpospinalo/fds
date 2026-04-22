@@ -17,7 +17,9 @@ apps/api_backend/
 ├── routers/                  # Controladores REST (Endpoints)
 │   ├── audit.py              # Dispara la evaluación LLM e ingesta en caché local
 │   ├── documents.py          # Lista archivos procesados desde S3
-│   └── search.py             # Consultas semánticas en ChromaDB
+│   ├── search.py             # Consultas semánticas en ChromaDB
+│   ├── convert.py            # Manejo de conversiones previas al pipeline
+│   └── pipeline.py           # Gestor asíncrono para ejecutar Ingesta a Capa Oro
 │
 ├── schemas/                  # Modelos Pydantic (Validación de entrada/salida)
 │   └── models.py             # SearchRequest, AuditResponse, DocumentMetadata, etc.
@@ -528,12 +530,6 @@ def health():
     return {"status": "ok"}
 ```
 
-**Consideraciones Actuales:**
-- ✅ CORS habilitado para desarrollo
-- ⚠️ Sin autenticación (todos endpoints públicos)
-- ⚠️ Sin rate limiting
-- ⚠️ Sin validación de permisos por documento
-
 ---
 
 ## 8. Flujo de Datos Completo (E2E)
@@ -592,22 +588,9 @@ def health():
 
 ---
 
-## 9. Consideraciones de Producción
-
-**Siguiente a Implementar:**
-
-1. **Autenticación:** Implementar JWT o AWS Cognito
-2. **Rate Limiting:** Proteger endpoints de abuso
-3. **Logging Centralizado:** CloudWatch o similar
-4. **Cache Distribuido:** Redis para resultados frecuentes
-5. **Validación de Parámetros:** Sanitizar entrada de usuarios
-6. **Health Checks:** Monitoreo de ChromaDB y S3
-7. **Timeouts:** Configurar timeouts en llamadas a ChromaDB y Gemini
-8. **Persistencia de Auditorías:** Mover de local a S3
-
 ---
 
-## 10. Variables de Entorno Requeridas
+## 9. Variables de Entorno Requeridas
 
 En `.env`:
 
@@ -643,7 +626,7 @@ CHROMA_SERVER_PORT=4000
 
 ---
 
-## 11. Ejecución Local
+## 10. Ejecución Local
 
 ```bash
 # 1. Instalar dependencias

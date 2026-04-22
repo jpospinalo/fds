@@ -35,7 +35,7 @@ El frontend necesita saber dónde está escuchando el backend de FastAPI. Crea u
 Archivo: `apps/frontend/.env`
 ```env
 # URL de conexión a la API local
-VITE_API_BASE_URL=http://localhost:8000
+VITE_API_URL=http://localhost:8000
 ```
 *(Nota: Vite requiere que las variables de entorno expuestas al navegador comiencen con el prefijo `VITE_`).*
 
@@ -69,8 +69,7 @@ El cliente web interactúa directamente con los endpoints descritos en el `03_AP
 
 ## 5. Limitaciones Actuales y Deuda Técnica
 
- **Subida de Archivos (Upload):** Actualmente, la interfaz visual puede contener botones de "Subir PDF" o "Cargar Documento", pero **esta funcionalidad no está conectada al backend**. 
-Como se documenta en la arquitectura, el flujo de ingesta actual requiere que los documentos se posicionen manualmente en S3 o en la carpeta `data/bronze/docs/`. El desarrollo del endpoint de subida y su integración con la UI es una prioridad para la próxima fase de desarrollo.
+**Subida de Archivos (Upload):** El frontend implementa la carga de PDFs y visualización del procesamiento en tiempo real (polling). Sin embargo, el archivo se procesa y viaja a través del pipeline utilizando endpoints de FastAPI. Asegurarse de que el backend esté con la configuración S3 correcta para este proceso.
 
 ## 6. Compilación para Producción
 
