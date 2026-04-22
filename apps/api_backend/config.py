@@ -25,10 +25,6 @@ class Config:
     S3_PREFIX_GOLD = "gold/"
     S3_PREFIX_QUARANTINE = "Quarantine/"
     
-    # --- SERVIDOR / API ---
-    # Lista de orígenes permitidos separados por comas para evitar quemar URLs en el CORS
-    CORS_ORIGINS = os.getenv("CORS_ORIGINS", "http://localhost:5173,http://localhost:3000")
-    
     # --- PROVEEDOR DE EMBEDDINGS ---
     # Puede ser 'azure' u 'ollama'
     EMBEDDINGS_PROVIDER = os.getenv("EMBEDDINGS_PROVIDER", "azure")
