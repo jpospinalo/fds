@@ -8,12 +8,12 @@ Clona el proyecto en tu máquina local y accede al directorio principal:
 
 ```bash
 git clone git@github.com:jpospinalo/fds.git
-cd rag_fds
+cd fds
 ```
 
 ## 2. Desplegar la Infraestructura (AWS)
 
-La plataforma utiliza servicios de AWS (S3, EC2). La creación de estos recursos está automatizada mediante scripts de Infrastructure as Code (IaC).
+La plataforma utiliza servicios de AWS distribuidos. La creación de estos recursos (S3, EC2, Application Load Balancer, Security Groups y Cloud9) está automatizada mediante scripts de Infrastructure as Code (IaC).
 
 1. Abre tu terminal configurada con AWS CLI o accede a AWS CloudShell.
 2. Ejecuta el script de infraestructura:
@@ -23,7 +23,7 @@ chmod +x scripts/setup_aws.sh
 ./scripts/setup_aws.sh
 ```
 
-Al finalizar, el script mostrará en pantalla el nombre del bucket S3 y la IP Elástica de tu servidor. Guarda estos datos para el siguiente paso.
+Al finalizar, el script mostrará en pantalla un resumen con el nombre del bucket S3, la IP Elástica de la EC2, el DNS del Load Balancer y los IDs de los grupos de seguridad. Guarda estos datos para los siguientes pasos.
 
 ## 3. Configurar ChromaDB en EC2 (Motor Vectorial)
 Nuestra arquitectura aloja la base de datos vectorial en la instancia EC2 para separar la carga de trabajo. Debes inicializar este servicio remoto antes de levantar el backend local.
@@ -67,7 +67,7 @@ AWS_SESSION_TOKEN=tu_token_key_aqui
 AWS_REGION=us-east-1
 
 # Credenciales LLM
-GEMINI_API_KEY=tu_api_key_aqui
+GEMINI_API_KEY = tu_api_key_aqui
 
 # Configuración del Bucket y Rutas (Arquitectura Medallón)
 S3_BUCKET_NAME=tu_bucket_aqui
@@ -77,8 +77,19 @@ S3_PREFIX_SILVER=silver/
 S3_PREFIX_GOLD=gold/
 S3_PREFIX_QUARANTINE=Quarantine/
 
+# ----------------------------------------
+# SELECTOR DE PROVEEDOR RAG
+# Opciones: azure | ollama
+# ----------------------------------------
+EMBEDDINGS_PROVIDER=ollama
+
+# ----------------------------------------
+# Configuración Ollama (Si usas proveedor local)
+# ----------------------------------------
+OLLAMA_BASE_URL=tu_end_point_aqui
+OLLAMA_EMBEDDINGS_MODEL=tu_modelo_aqui
+
 # Azure OpenAI
-# Consulta ./docs/05_AZURE_EMBEDDINGS.md para obtener estos valores
 AZURE_OPENAI_API_KEY=tu_api_key_aqui
 AZURE_OPENAI_ENDPOINT=tu_end_point_aqui
 AZURE_OPENAI_API_VERSION=tu_version_aqui
@@ -86,12 +97,22 @@ AZURE_OPENAI_EMBEDDINGS_DEPLOYMENT=tu_modelo_aqui
 
 # CHROMA KEYS
 CHROMA_SERVER_HOST=IP_del_servidor
-CHROMA_SERVER_PORT=4000
+CHROMA_SERVER_PORT=puerto_del_chroma
 ```
 
-## 5. Configurar el Entorno Virtual (Backend)
+### Frontend (`apps/frontend/.env`)
 
-Para ejecutar el motor RAG y la API, es necesario configurar un entorno de Python aislado.
+Para que el frontend pueda comunicarse con la API en la nube de forma estática, crea un archivo `.env` dentro de la carpeta `apps/frontend/` con el DNS del Load Balancer obtenido en el paso 2:
+
+```env
+# DNS del Application Load Balancer (No incluir el puerto 8000)
+VITE_API_URL=http://<ALB_DNS_URL>
+```
+
+
+## 5. Configurar el Entorno Virtual (Backend Local)
+
+Para ejecutar el motor RAG y la API de manera local (para pruebas y desarrollo), es necesario configurar un entorno de Python aislado.
 
 **En sistemas basados en Unix (Mac/Linux):**
 ```bash
