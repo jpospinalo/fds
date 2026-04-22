@@ -2,7 +2,7 @@ import axios from "axios";
 
 // Local dev: vacío → Vite proxy enruta a localhost:8000
 // Producción: VITE_API_URL=http://ec2-xxx:8000 se inyecta en el build
-const BASE_URL = import.meta.env.VITE_API_URL ?? "";
+const BASE_URL = "http://54.157.141.112:8000";
 
 export const api = axios.create({
   baseURL: BASE_URL,
