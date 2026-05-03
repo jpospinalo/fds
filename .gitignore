@@ -240,3 +240,13 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Ignorar el archivo de notas de Claude
+CLAUDE.md
+
+# Ignorar la carpeta oculta de configuración (y todo su contenido)
+.claude/
+
+# Ignorar cualquier otro archivo o carpeta llamado claude
+claude/
+claude
