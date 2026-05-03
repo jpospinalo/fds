@@ -1,11 +1,15 @@
-import { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 import {
   fetchDocuments,
   fetchSectionContent,
   runAudit,
   getAuditResults,
+  checkAuditExists,
   AuditResponse,
+  AuditChanges,
   AuditSectionResult,
   DocumentInfo,
 } from "../api/client";
@@ -109,6 +113,69 @@ const ITEM_DESCRIPTIONS: Record<string, string> = {
   "16_1": "Información adicional",
 };
 
+const ITEM_EXPECTATIONS: Record<string, string> = {
+  "1_1": "Debe incluir el nombre comercial del producto y al menos un identificador único: número CAS, número CE o código de artículo del fabricante.",
+  "1_2": "Sinónimos reconocidos, nombres alternativos o códigos internos del producto.",
+  "1_3": "Descripción del uso previsto (ej. adhesivo industrial, recubrimiento) y cualquier restricción de uso conocida.",
+  "1_4": "Nombre completo, dirección física, país, teléfono y correo electrónico del fabricante o distribuidor responsable.",
+  "1_5": "Número de teléfono de emergencias disponible 24/7, preferiblemente de un centro toxicológico o servicio de emergencia nacional.",
+  "2_1": "Clasificación SGA del producto: clase de peligro, categoría y código H correspondiente.",
+  "2_2_1": "Uno o más pictogramas GHS aplicables (llama, calavera, exclamación, corrosión, etc.).",
+  "2_2_2": "Palabra de advertencia: 'Peligro' para categorías más graves o 'Atención' para las menos graves.",
+  "2_2_3": "Frases H (indicaciones de peligro) aplicables con su descripción completa.",
+  "2_2_4": "Frases P (consejos de prudencia) de prevención, respuesta, almacenamiento y eliminación.",
+  "2_3": "Peligros no clasificados por SGA: efectos en la salud no categorizados, polvo combustible u otros.",
+  "3_1_1": "Identidad química de la sustancia pura: nombre IUPAC o nombre químico reconocido.",
+  "3_1_1_1": "Nombre común o sinónimos aceptados internacionalmente para la sustancia.",
+  "3_1_1_2": "Número CAS y/o número CE (EINECS/ELINCS) de la sustancia.",
+  "3_1_1_3": "Impurezas relevantes, aditivos estabilizadores o contaminantes que afecten la clasificación.",
+  "3_2_1": "Nombre de la mezcla y descripción de los componentes peligrosos identificados.",
+  "3_2_1_1": "Nombre comercial de la mezcla y denominación química de sus componentes principales.",
+  "3_2_1_2": "Número CAS y número CE de cada componente peligroso de la mezcla.",
+  "3_2_1_3": "Concentración o rango de concentración (%) de cada componente peligroso.",
+  "4_1": "Instrucciones por vía de exposición: inhalación, contacto ocular, contacto dérmico e ingestión.",
+  "4_2": "Síntomas y efectos esperados, diferenciando entre efectos agudos (inmediatos) y retardados.",
+  "4_3": "Indicación de si se requiere atención médica urgente y si existe antídoto o tratamiento específico.",
+  "5_1": "Agentes extintores recomendados (CO₂, polvo seco, espuma, agua nebulizada) e inadecuados.",
+  "5_2": "Peligros específicos durante un incendio: gases tóxicos, explosividad o reactividad térmica.",
+  "5_3": "EPP para bomberos: equipo autónomo de respiración y traje de protección química.",
+  "6_1": "Precauciones personales: EPP requerido y procedimiento de evacuación ante un derrame.",
+  "6_2": "Medidas para prevenir la contaminación de suelos, aguas superficiales y alcantarillado.",
+  "6_3": "Métodos de contención (diques, absorbentes) y materiales adecuados para la limpieza.",
+  "7_1": "Precauciones para la manipulación segura: ventilación, evitar fuentes de ignición y EPP básico.",
+  "7_2": "Condiciones de almacenamiento: temperatura límite, humedad, incompatibilidades y tipo de recipiente.",
+  "7_3": "Usos finales específicos del producto y condiciones técnicas particulares asociadas.",
+  "8_1": "Valores límite de exposición ocupacional (TLV-TWA, TLV-STEL) establecidos por autoridades competentes.",
+  "8_2": "Controles de ingeniería: ventilación local o general para mantener la exposición por debajo de los límites.",
+  "8_3": "EPP completo con especificaciones técnicas: tipo de respirador, gafas, guantes y ropa de protección.",
+  "9_1": "Estado físico, color, olor, pH, punto de fusión/ebullición, punto de inflamación, densidad y solubilidad en agua.",
+  "10_1": "Condiciones en las que el producto puede reaccionar de forma peligrosa (oxidantes, ácidos, etc.).",
+  "10_2": "Declaración de estabilidad química bajo condiciones normales de uso y almacenamiento.",
+  "10_3": "Reacciones peligrosas posibles: polimerización incontrolada, descomposición exotérmica.",
+  "10_4": "Condiciones a evitar: calor excesivo, humedad, luz UV o impactos mecánicos.",
+  "10_5": "Sustancias con las que no debe mezclarse ni almacenarse por riesgo de reacción.",
+  "10_6": "Productos de descomposición térmica u oxidativa que puedan generarse durante un incidente.",
+  "11_1": "Toxicidad aguda (LD₅₀/LC₅₀), efectos de irritación, corrosión, sensibilización y toxicidad repetida.",
+  "11_2": "Vías relevantes de exposición: inhalación, ingestión, contacto dérmico y ocular.",
+  "11_3": "Síntomas relacionados con las propiedades físico-químicas del producto (ej. narcosis, irritación).",
+  "11_4": "Efectos inmediatos, subcrónicos y crónicos por exposición repetida o prolongada.",
+  "11_5": "Valores cuantitativos de toxicidad: DL₅₀ oral o dérmico y CL₅₀ por inhalación.",
+  "12_1": "Toxicidad acuática: EC₅₀ o CL₅₀ para peces, dafnia o algas (aguda o crónica).",
+  "12_2": "Biodegradabilidad (DBO/DQO) y persistencia en el ambiente.",
+  "12_3": "Factor de bioconcentración (FBC) o coeficiente de partición octanol/agua (log Kow).",
+  "12_4": "Potencial de lixiviación al suelo y aguas subterráneas.",
+  "12_5": "Efectos sobre la capa de ozono o potencial de calentamiento global si aplica.",
+  "13_1": "Métodos de eliminación conformes a la normativa: disposición como residuo peligroso, incineración controlada o reciclaje.",
+  "14_1": "Número ONU (UN XXXX) asignado por el Comité de Expertos de la ONU para el transporte.",
+  "14_2": "Denominación oficial de transporte establecida en las Recomendaciones de la ONU (naranja book).",
+  "14_3": "Clase de peligro para transporte (ADR/IMDG/IATA) y subclase si corresponde.",
+  "14_4": "Grupo de embalaje I, II o III según el grado de peligro para el transporte.",
+  "14_5": "Indicación de si el producto es peligroso para el medio ambiente marino (Marine Pollutant).",
+  "14_6": "Precauciones especiales del usuario durante carga, transporte y descarga.",
+  "15_1": "Referencias a reglamentaciones nacionales e internacionales: inventarios de sustancias, restricciones o autorizaciones aplicables.",
+  "16_1": "Fecha de elaboración o última revisión de la FDS, fuentes consultadas y lista de cambios respecto a la versión anterior.",
+};
+
 /** Strips "Item_" prefix → "1_0", "2_2_1", "3_1_1_1", etc. */
 function getItemKey(rawLabel: string): string {
   return rawLabel.replace(/^Item_/, "");
@@ -130,22 +197,119 @@ function getIndentLevel(key: string): number {
   return Math.max(0, key.split("_").length - 2);
 }
 
+// ── Snippet helpers ──────────────────────────────────────────────────────────
+const ES_STOP = new Set([
+  "de","del","la","el","los","las","y","o","en","a","con","por","para","que",
+  "se","no","un","una","su","al","sus","es","lo","le","les","este","esta","esto",
+  "como","también","donde","cuando","entre","sobre","bajo","sin","ser","han",
+  "sido","fue","son","hay","pero","todo","todos","toda","todas","ante","más",
+]);
+
+function getKeywords(description: string): string[] {
+  return description
+    .toLowerCase()
+    .normalize("NFD").replace(/[̀-ͯ]/g, "")
+    .replace(/[^\w\s]/g, " ")
+    .split(/\s+/)
+    .filter((w) => w.length > 3 && !ES_STOP.has(w));
+}
+
+function extractSnippet(
+  fullText: string,
+  description: string
+): { lines: string[]; keywords: string[] } {
+  const keywords = getKeywords(description);
+  const allLines = fullText.split("\n").filter((l) => l.trim());
+  if (!keywords.length || !allLines.length) return { lines: allLines.slice(0, 8), keywords: [] };
+
+  const norm = (s: string) => s.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "");
+  let bestScore = 0;
+  let bestIdx = 0;
+  allLines.forEach((line, idx) => {
+    const n = norm(line);
+    const score = keywords.reduce((s, kw) => s + (n.includes(kw) ? 1 : 0), 0);
+    if (score > bestScore) { bestScore = score; bestIdx = idx; }
+  });
+
+  const start = Math.max(0, bestIdx - 2);
+  const end = Math.min(allLines.length - 1, bestIdx + 5);
+  return { lines: allLines.slice(start, end + 1), keywords };
+}
+
+function HighlightLine({ text, keywords }: { text: string; keywords: string[] }) {
+  if (!keywords.length) return <>{text}</>;
+  const norm = (s: string) => s.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "");
+  const normText = norm(text);
+  const raw: { start: number; end: number }[] = [];
+  keywords.forEach((kw) => {
+    let pos = 0;
+    while (true) {
+      const idx = normText.indexOf(kw, pos);
+      if (idx === -1) break;
+      raw.push({ start: idx, end: idx + kw.length });
+      pos = idx + 1;
+    }
+  });
+  if (!raw.length) return <>{text}</>;
+  raw.sort((a, b) => a.start - b.start);
+  const merged: { start: number; end: number }[] = [];
+  for (const m of raw) {
+    if (merged.length && m.start <= merged[merged.length - 1].end)
+      merged[merged.length - 1].end = Math.max(merged[merged.length - 1].end, m.end);
+    else merged.push({ ...m });
+  }
+  const parts: React.ReactNode[] = [];
+  let pos = 0;
+  merged.forEach(({ start, end }, i) => {
+    if (pos < start) parts.push(<span key={`t${i}`}>{text.slice(pos, start)}</span>);
+    parts.push(
+      <mark key={`m${i}`} style={{ background: "rgba(16,185,129,0.28)", color: "#6ee7b7", borderRadius: 2, padding: "0 2px", fontWeight: 600 }}>
+        {text.slice(start, end)}
+      </mark>
+    );
+    pos = end;
+  });
+  if (pos < text.length) parts.push(<span key="tail">{text.slice(pos)}</span>);
+  return <>{parts}</>;
+}
+
 // ── Single checklist row ─────────────────────────────────────────────────────
 function CheckRow({
   label,
   present,
   isFirst,
+  onPresenteClick,
 }: {
   label: string;
   present: boolean;
   isFirst: boolean;
+  onPresenteClick?: (label: string) => void;
 }) {
+  const [pulseKey, setPulseKey] = useState(0);
+  const [pulsing, setPulsing] = useState(false);
+  const [showExpected, setShowExpected] = useState(false);
+
+  const handlePillClick = () => {
+    if (present) {
+      setPulseKey((k) => k + 1);
+      setPulsing(true);
+      setTimeout(() => setPulsing(false), 650);
+      onPresenteClick?.(label);
+    } else {
+      setShowExpected((v) => !v);
+    }
+  };
+
   const key = getItemKey(label);
   const description = getItemDescription(label);
   const level = getIndentLevel(key);
   const isSectionTitle = key.endsWith("_0");
+  const expectedText = !present && !isSectionTitle
+    ? (ITEM_EXPECTATIONS[key] ?? `Este ítem (${key}) debe estar presente en la sección según la normativa SGA. Revisar el documento original para verificar su ausencia.`)
+    : null;
 
   return (
+    <>
     <div
       style={{
         display: "flex",
@@ -154,7 +318,8 @@ function CheckRow({
         padding: "7px 14px 7px 0",
         paddingLeft: `${14 + level * 22}px`,
         borderTop: isFirst ? "none" : "1px solid var(--border)",
-        background: "transparent",
+        background: showExpected ? "rgba(245,158,11,0.03)" : "transparent",
+        transition: "background 0.2s",
       }}
     >
       {/* Connector line for nested items */}
@@ -235,51 +400,114 @@ function CheckRow({
       </span>
 
       {/* Status pill */}
-      <span
+      <div style={{ position: "relative", display: "inline-flex", flexShrink: 0 }}>
+        <span
+          onClick={(present || expectedText) ? handlePillClick : undefined}
+          title={present ? "Ver en contexto" : expectedText ? "Ver qué se espera" : undefined}
+          style={{
+            fontSize: 11,
+            fontWeight: 600,
+            padding: "2px 10px",
+            borderRadius: 20,
+            whiteSpace: "nowrap",
+            background: present
+              ? "rgba(16,185,129,0.1)"
+              : showExpected
+              ? "rgba(245,158,11,0.15)"
+              : "rgba(239,68,68,0.07)",
+            color: present ? "#10b981" : showExpected ? "#f59e0b" : "#ef4444",
+            border: `1px solid ${
+              present
+                ? "rgba(16,185,129,0.25)"
+                : showExpected
+                ? "rgba(245,158,11,0.4)"
+                : "rgba(239,68,68,0.18)"
+            }`,
+            cursor: (present || expectedText) ? "pointer" : "default",
+            transition: "background 0.15s, color 0.15s, border-color 0.15s",
+            userSelect: "none",
+          }}
+        >
+          {present ? "Presente" : "No presente"}
+        </span>
+        {pulsing && (
+          <span
+            key={pulseKey}
+            style={{
+              position: "absolute",
+              inset: -2,
+              borderRadius: 20,
+              border: "2px solid #10b981",
+              animation: "rippleOut 0.65s ease-out forwards",
+              pointerEvents: "none",
+            }}
+          />
+        )}
+      </div>
+    </div>
+
+    {/* Panel de expectativa (No presente) */}
+    {showExpected && expectedText && (
+      <div
         style={{
-          fontSize: 11,
-          fontWeight: 600,
-          padding: "2px 10px",
-          borderRadius: 20,
-          whiteSpace: "nowrap",
-          flexShrink: 0,
-          background: present
-            ? "rgba(16,185,129,0.1)"
-            : "rgba(239,68,68,0.07)",
-          color: present ? "#10b981" : "#ef4444",
-          border: `1px solid ${
-            present ? "rgba(16,185,129,0.25)" : "rgba(239,68,68,0.18)"
-          }`,
+          margin: "0 12px 4px",
+          marginLeft: `${38 + level * 22}px`,
+          padding: "7px 10px",
+          borderLeft: "3px solid #f59e0b",
+          background: "rgba(245,158,11,0.06)",
+          borderRadius: "0 var(--radius-sm) var(--radius-sm) 0",
+          display: "flex",
+          alignItems: "flex-start",
+          gap: 8,
         }}
       >
-        {present ? "Presente" : "No presente"}
-      </span>
-    </div>
+        <span style={{ fontSize: 10, color: "#f59e0b", fontWeight: 700, letterSpacing: "0.05em", textTransform: "uppercase", flexShrink: 0, paddingTop: 1 }}>
+          Se espera
+        </span>
+        <span style={{ fontSize: 12, color: "var(--text-secondary)", lineHeight: 1.55 }}>
+          {expectedText}
+        </span>
+      </div>
+    )}
+    </>
   );
 }
 
 // ── Section accordion card ───────────────────────────────────────────────────
-function SectionChecklist({ sec, docId }: { sec: AuditSectionResult; docId: string }) {
+function SectionChecklist({ sec, docId, year }: { sec: AuditSectionResult; docId: string; year?: number }) {
   const [open, setOpen] = useState(true);
   const [showContent, setShowContent] = useState(false);
   const [sectionText, setSectionText] = useState<string | null>(null);
   const [contentLoading, setContentLoading] = useState(false);
   const [contentError, setContentError] = useState("");
+  const [activeItem, setActiveItem] = useState<string | null>(null);
+  const [snippetKey, setSnippetKey] = useState(0);
 
-  const handleToggleContent = async () => {
-    if (showContent) { setShowContent(false); return; }
-    setShowContent(true);
+  const loadContent = async () => {
     if (sectionText !== null) return;
     setContentLoading(true);
     setContentError("");
     try {
-      const res = await fetchSectionContent(docId, sec.seccion);
+      const res = await fetchSectionContent(docId, sec.seccion, year);
       setSectionText(res.contenido || "(Sección sin contenido)");
     } catch {
       setContentError("No se pudo cargar el contenido de esta sección.");
     } finally {
       setContentLoading(false);
     }
+  };
+
+  const handleToggleContent = async () => {
+    if (showContent) { setShowContent(false); return; }
+    setShowContent(true);
+    await loadContent();
+  };
+
+  const handlePresenteClick = async (label: string) => {
+    if (activeItem === label) { setActiveItem(null); return; }
+    setActiveItem(label);
+    setSnippetKey((k) => k + 1);
+    if (sectionText === null && !contentLoading) await loadContent();
   };
 
   const items = sec.items ?? [];
@@ -438,41 +666,105 @@ function SectionChecklist({ sec, docId }: { sec: AuditSectionResult; docId: stri
         {showContent ? "Ocultar contenido" : "Ver contenido §" + sec.seccion}
       </button>
 
-      {/* Panel de contenido de la sección */}
+      {/* Panel de contenido completo de la sección */}
       {showContent && (
         <div
           style={{
             margin: "0 10px 10px",
-            padding: "10px 12px",
+            padding: "10px 16px",
             background: "var(--surface-2)",
             border: "1px solid var(--border)",
             borderRadius: "var(--radius-sm)",
             fontSize: 12,
             lineHeight: 1.7,
             color: "var(--text-secondary)",
-            maxHeight: 320,
+            maxHeight: 380,
             overflowY: "auto",
-            whiteSpace: "pre-wrap",
-            wordBreak: "break-word",
           }}
         >
           {contentLoading && <span style={{ color: "var(--text-muted)" }}>Cargando…</span>}
           {contentError && <span style={{ color: "var(--error)" }}>{contentError}</span>}
-          {!contentLoading && !contentError && sectionText}
+          {!contentLoading && !contentError && sectionText && (
+            <div className="prose">
+              <ReactMarkdown remarkPlugins={[remarkGfm]}>{sectionText}</ReactMarkdown>
+            </div>
+          )}
         </div>
       )}
 
       {/* Checklist body */}
       {open && items.length > 0 && (
         <div style={{ borderTop: "1px solid var(--border)" }}>
-          {items.map((item, idx) => (
-            <CheckRow
-              key={idx}
-              label={item.item}
-              present={item.presencia === "Presente"}
-              isFirst={idx === 0}
-            />
-          ))}
+          {items.map((item, idx) => {
+            const isActive = activeItem === item.item;
+            const snippet =
+              isActive && sectionText
+                ? extractSnippet(sectionText, getItemDescription(item.item))
+                : null;
+
+            return (
+              <React.Fragment key={idx}>
+                <CheckRow
+                  label={item.item}
+                  present={item.presencia === "Presente"}
+                  isFirst={idx === 0}
+                  onPresenteClick={handlePresenteClick}
+                />
+                {isActive && (
+                  <div
+                    style={{
+                      margin: "0 12px 6px 38px",
+                      borderRadius: "var(--radius-sm)",
+                      border: "1px solid rgba(16,185,129,0.35)",
+                      background: "rgba(16,185,129,0.04)",
+                      position: "relative",
+                      overflow: "hidden",
+                    }}
+                  >
+                    {/* Scan line animation */}
+                    <div
+                      key={snippetKey}
+                      style={{
+                        position: "absolute",
+                        top: 0, left: 0, right: 0,
+                        height: 2,
+                        background: "linear-gradient(90deg, transparent, #10b981 30%, #6ee7b7 50%, #10b981 70%, transparent)",
+                        boxShadow: "0 0 10px 3px rgba(16,185,129,0.5)",
+                        animation: "scanDown 0.9s ease-in-out forwards",
+                        pointerEvents: "none",
+                        zIndex: 2,
+                      }}
+                    />
+                    {/* Header */}
+                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "5px 10px 4px", borderBottom: "1px solid rgba(16,185,129,0.15)" }}>
+                      <span style={{ fontSize: 10, color: "#10b981", fontWeight: 600, letterSpacing: "0.04em", textTransform: "uppercase" }}>
+                        Extracto del documento
+                      </span>
+                      <button
+                        onClick={() => setActiveItem(null)}
+                        style={{ background: "none", border: "none", color: "var(--text-muted)", fontSize: 14, padding: "0 2px", lineHeight: 1, cursor: "pointer" }}
+                      >
+                        ✕
+                      </button>
+                    </div>
+                    {/* Content */}
+                    <div style={{ padding: "7px 10px 8px", fontSize: 11.5, lineHeight: 1.65, color: "var(--text-secondary)", fontFamily: "var(--font-mono)" }}>
+                      {contentLoading && <span style={{ color: "var(--text-muted)" }}>Cargando…</span>}
+                      {contentError && <span style={{ color: "var(--error)" }}>{contentError}</span>}
+                      {snippet && snippet.lines.map((line, li) => (
+                        <div key={li} style={{ whiteSpace: "pre-wrap", wordBreak: "break-word" }}>
+                          <HighlightLine text={line} keywords={snippet.keywords} />
+                        </div>
+                      ))}
+                      {!contentLoading && !contentError && !snippet && sectionText === null && (
+                        <span style={{ color: "var(--text-muted)" }}>Cargando contenido…</span>
+                      )}
+                    </div>
+                  </div>
+                )}
+              </React.Fragment>
+            );
+          })}
         </div>
       )}
 
@@ -497,10 +789,13 @@ export default function Audit() {
   const [params] = useSearchParams();
   const [docs, setDocs] = useState<DocumentInfo[]>([]);
   const [selectedDoc, setSelectedDoc] = useState(params.get("doc_id") || "");
+  const [selectedYear, setSelectedYear] = useState<number | null>(null);
   const [result, setResult] = useState<AuditResponse | null>(null);
   const [pollingId, setPollingId] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
+  const [showConfirm, setShowConfirm] = useState(false);
+  const [existingMeta, setExistingMeta] = useState<{ created_at: string | null; updated_at: string | null } | null>(null);
 
   useEffect(() => {
     fetchDocuments()
@@ -523,14 +818,38 @@ export default function Audit() {
 
   useBackgroundPolling(pollingId, fetcher, handlePollResult, 3000);
 
+  const doRunAudit = async (force: boolean) => {
+    setResult(null);
+    await runAudit(selectedDoc, force);
+    setPollingId(selectedDoc);
+  };
+
   const handleRun = async () => {
     if (!selectedDoc) return;
     setLoading(true);
     setErrorMsg("");
-    setResult(null);
     try {
-      await runAudit(selectedDoc);
-      setPollingId(selectedDoc);
+      const meta = await checkAuditExists(selectedDoc);
+      if (meta.exists) {
+        setExistingMeta({ created_at: meta.created_at, updated_at: meta.updated_at });
+        setShowConfirm(true);
+        return;
+      }
+      await doRunAudit(false);
+    } catch {
+      setErrorMsg("Error al iniciar la auditoría. Verifica que la API esté activa.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleConfirmRerun = async () => {
+    setShowConfirm(false);
+    setExistingMeta(null);
+    setLoading(true);
+    setErrorMsg("");
+    try {
+      await doRunAudit(true);
     } catch {
       setErrorMsg("Error al iniciar la auditoría. Verifica que la API esté activa.");
     } finally {
@@ -671,7 +990,7 @@ export default function Audit() {
   };
 
   return (
-    <div style={{ maxWidth: 820 }}>
+    <div style={{ width: "100%" }}>
       <h1
         style={{ fontSize: "1.2rem", marginBottom: "0.35rem", fontWeight: 600 }}
       >
@@ -704,16 +1023,20 @@ export default function Audit() {
         <select
           value={selectedDoc}
           onChange={(e) => {
-            setSelectedDoc(e.target.value);
+            const docId = e.target.value;
+            setSelectedDoc(docId);
+            setSelectedYear(docs.find((d) => d.doc_id === docId)?.year ?? null);
             setResult(null);
             setErrorMsg("");
+            setShowConfirm(false);
+            setExistingMeta(null);
           }}
           style={{ flex: 1, minWidth: 220 }}
         >
           <option value="">— Seleccionar documento —</option>
           {docs.map((d) => (
             <option key={d.doc_id} value={d.doc_id}>
-              {d.doc_id}
+              {d.year ? `[${d.year}] ${d.doc_id}` : d.doc_id}
             </option>
           ))}
         </select>
@@ -772,6 +1095,52 @@ export default function Audit() {
           </>
         )}
       </div>
+
+      {/* Confirmación re-auditar */}
+      {showConfirm && existingMeta && (
+        <div
+          style={{
+            padding: "0.85rem 1rem",
+            background: "rgba(245,158,11,0.07)",
+            border: "1px solid rgba(245,158,11,0.35)",
+            borderRadius: "var(--radius)",
+            fontSize: 13,
+            color: "var(--text)",
+            marginBottom: "1rem",
+            display: "flex",
+            alignItems: "center",
+            gap: 12,
+            flexWrap: "wrap",
+          }}
+        >
+          <span style={{ flex: 1 }}>
+            Este documento ya tiene una auditoría
+            {existingMeta.created_at && (
+              <>
+                {" "}del{" "}
+                <strong>
+                  {new Date(existingMeta.created_at).toLocaleDateString("es-CO", {
+                    year: "numeric", month: "long", day: "numeric",
+                  })}
+                </strong>
+              </>
+            )}
+            . ¿Desea realizarla de nuevo?
+          </span>
+          <button
+            onClick={() => { setShowConfirm(false); setExistingMeta(null); }}
+            style={btnBase}
+          >
+            Cancelar
+          </button>
+          <button
+            onClick={handleConfirmRerun}
+            style={{ ...btnPrimary, background: "#f59e0b" }}
+          >
+            Re-auditar
+          </button>
+        </div>
+      )}
 
       {/* Running banner */}
       {isRunning && (
@@ -979,9 +1348,48 @@ export default function Audit() {
             </span>
           </div>
 
+          {/* Banner de cambios detectados */}
+          {result.changes && (() => {
+            const ch = result.changes as AuditChanges;
+            const total = ch.added.length + ch.removed.length + ch.status_changed.length;
+            if (ch.note && total === 0) return (
+              <div style={{
+                padding: "0.7rem 1rem", marginBottom: "1rem", fontSize: 12,
+                background: "rgba(99,102,241,0.07)", border: "1px solid rgba(99,102,241,0.25)",
+                borderRadius: "var(--radius)", color: "var(--text-secondary)",
+              }}>
+                {ch.note}
+              </div>
+            );
+            if (total === 0) return null;
+            return (
+              <div style={{
+                padding: "0.7rem 1rem", marginBottom: "1rem", fontSize: 12,
+                background: "rgba(245,158,11,0.07)", border: "1px solid rgba(245,158,11,0.3)",
+                borderRadius: "var(--radius)", color: "var(--text)",
+                display: "flex", gap: 16, flexWrap: "wrap", alignItems: "center",
+              }}>
+                <span style={{ fontWeight: 500 }}>
+                  {total} cambio{total !== 1 ? "s" : ""} respecto a la auditoría anterior
+                </span>
+                {ch.status_changed.length > 0 && (
+                  <span style={{ color: "var(--text-secondary)" }}>
+                    {ch.status_changed.length} ítem{ch.status_changed.length !== 1 ? "s" : ""} con estado diferente
+                  </span>
+                )}
+                {ch.added.length > 0 && (
+                  <span style={{ color: "#10b981" }}>+{ch.added.length} nuevo{ch.added.length !== 1 ? "s" : ""}</span>
+                )}
+                {ch.removed.length > 0 && (
+                  <span style={{ color: "#ef4444" }}>−{ch.removed.length} eliminado{ch.removed.length !== 1 ? "s" : ""}</span>
+                )}
+              </div>
+            );
+          })()}
+
           {/* Per-section checklists */}
           {secciones.map((s) => (
-            <SectionChecklist key={s.seccion} sec={s} docId={selectedDoc} />
+            <SectionChecklist key={s.seccion} sec={s} docId={selectedDoc} year={selectedYear ?? undefined} />
           ))}
         </div>
       )}

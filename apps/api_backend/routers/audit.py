@@ -4,11 +4,12 @@ import sys
 from pathlib import Path
 from typing import Dict
 
-from fastapi import APIRouter, BackgroundTasks, HTTPException
+from fastapi import APIRouter, BackgroundTasks, HTTPException, Query
 
 from api_backend.schemas.models import (
     AuditRequest,
     AuditResponse,
+    AuditChanges,
     AuditItemResult,
     AuditSectionResult,
 )
@@ -22,6 +23,27 @@ from api_backend.cache import audit_store
 router = APIRouter(prefix="/audit", tags=["Auditoría SGA"])
 
 _audit_cache: Dict[str, dict] = {}
+
+
+def _compute_diff(old: dict, new: dict) -> AuditChanges:
+    old_items = {
+        (s["seccion"], i["item"]): i["presencia"]
+        for s in old.get("secciones", [])
+        for i in s.get("items", [])
+    }
+    new_items = {
+        (s["seccion"], i["item"]): i["presencia"]
+        for s in new.get("secciones", [])
+        for i in s.get("items", [])
+    }
+    added = [{"seccion": k[0], "item": k[1]} for k in new_items if k not in old_items]
+    removed = [{"seccion": k[0], "item": k[1]} for k in old_items if k not in new_items]
+    status_changed = [
+        {"seccion": k[0], "item": k[1], "before": old_items[k], "after": new_items[k]}
+        for k in old_items
+        if k in new_items and old_items[k] != new_items[k]
+    ]
+    return AuditChanges(added=added, removed=removed, status_changed=status_changed)
 
 
 def _generate_csv_report(secciones: list) -> str:
@@ -172,23 +194,71 @@ def _parse_audit_report(raw_text: str, doc_id: str) -> AuditResponse:
     )
 
 
+@router.get("/{doc_id}/exists", summary="Verificar si ya existe auditoría para un documento")
+def check_audit_exists(doc_id: str):
+    meta = audit_store.get_meta(doc_id)
+    if meta is None:
+        return {"exists": False, "created_at": None, "updated_at": None}
+    return {"exists": True, "created_at": meta["created_at"], "updated_at": meta["updated_at"]}
+
+
 @router.post("/{doc_id}", summary="Ejecutar auditoría completa SGA para un documento")
-def run_audit(doc_id: str, background_tasks: BackgroundTasks):
+def run_audit(doc_id: str, background_tasks: BackgroundTasks, force: bool = Query(False)):
     if doc_id in _audit_cache and _audit_cache[doc_id].get("status") == "running":
         return {"status": "running", "doc_id": doc_id}
+
+    # Sin force: devolver resultado existente sin re-correr el LLM
+    if not force:
+        if doc_id in _audit_cache and _audit_cache[doc_id].get("status") == "completed":
+            return _audit_cache[doc_id]
+        stored = audit_store.load(doc_id)
+        if stored and stored.get("status") == "completed":
+            _audit_cache[doc_id] = stored
+            return stored
 
     _audit_cache[doc_id] = {"status": "running", "doc_id": doc_id}
 
     def _run():
         try:
             from api_backend.auditor.sga_auditor_judge import inspeccionar_documento_texto
+            from api_backend.auditor.audit_s3 import compute_source_hash, upload_audit_result
+            from api_backend.config import Config
+
+            # Fase 3: hash del contenido fuente (ChromaDB)
+            new_hash = compute_source_hash(doc_id)
+
+            # Si re-auditoría forzada pero fuente sin cambios → saltar LLM
+            if force:
+                meta = audit_store.get_meta(doc_id)
+                if new_hash and meta and meta.get("source_hash") == new_hash:
+                    existing = audit_store.load(doc_id)
+                    if existing:
+                        existing["changes"] = AuditChanges(
+                            note="Sin cambios en la fuente del documento"
+                        ).dict()
+                        report_path = Config.DATA_DIR / "evaluation_reports" / f"Checklist_SGA_{doc_id}.txt"
+                        if report_path.exists():
+                            existing["reporte_txt"] = report_path.read_text(encoding="utf-8")
+                        audit_store.save(doc_id, existing, source_hash=new_hash)
+                        _audit_cache[doc_id] = existing
+                        return
+
+            # Cargar datos previos para diff (solo en re-auditoría)
+            previous_data = audit_store.load(doc_id) if force else None
+
             reporte_path = inspeccionar_documento_texto(doc_id)
             with open(reporte_path, "r", encoding="utf-8") as f:
                 raw = f.read()
             resultado = _parse_audit_report(raw, doc_id)
             data = resultado.dict()
+
+            # Fase 3: calcular diff respecto a auditoría previa
+            if force and previous_data:
+                data["changes"] = _compute_diff(previous_data, data).dict()
+
             _audit_cache[doc_id] = data
-            audit_store.save(doc_id, data)
+            audit_store.save(doc_id, data, source_hash=new_hash)
+            upload_audit_result(doc_id, data)
         except Exception as e:
             _audit_cache[doc_id] = {
                 "status": "error",
@@ -208,10 +278,11 @@ def run_audit(doc_id: str, background_tasks: BackgroundTasks):
 def get_audit_results(doc_id: str):
     from api_backend.config import Config
 
-    # 1. Memoria (en curso o ya completado en esta sesión)
-    if doc_id in _audit_cache and _audit_cache[doc_id].get("status") != "running":
+    # 1. Memoria — devuelve "running" si está en curso (no 404)
+    if doc_id in _audit_cache:
         cached = _audit_cache[doc_id]
-        # Re-adjuntar reporte_txt desde disco si falta
+        if cached.get("status") == "running":
+            return cached
         if not cached.get("reporte_txt"):
             report_path = Config.DATA_DIR / "evaluation_reports" / f"Checklist_SGA_{doc_id}.txt"
             if report_path.exists():

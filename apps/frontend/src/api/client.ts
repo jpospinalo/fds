@@ -22,6 +22,7 @@ export type SeccionEstado = "presente" | "incompleta" | "no_presente" | "sin_aud
 
 export interface DocumentInfo {
   doc_id: string;
+  year?: number;
   secciones_disponibles: number[];
   total_chunks: number;
   secciones_estado: Record<string, SeccionEstado>;
@@ -53,13 +54,21 @@ export interface AuditSectionResult {
   raw_text: string;
 }
 
+export interface AuditChanges {
+  added: Array<{ seccion: number; item: string }>;
+  removed: Array<{ seccion: number; item: string }>;
+  status_changed: Array<{ seccion: number; item: string; before: string; after: string }>;
+  note?: string;
+}
+
 export interface AuditResponse {
   doc_id: string;
   status: string;       // "completed" | "running" | "error"
   secciones: AuditSectionResult[];
   reporte_txt?: string;
-  reporte_csv?: string; // ← añadido: el backend lo genera pero faltaba aquí
-  detail?: string;      // ← para errores
+  reporte_csv?: string;
+  detail?: string;
+  changes?: AuditChanges;
 }
 
 export interface PipelineJob {
@@ -78,10 +87,10 @@ export interface PipelineJob {
 export const fetchDocuments = () =>
   api.get<DocumentInfo[]>("/api/documents/").then((r) => r.data);
 
-export const fetchSectionContent = (docId: string, seccion: number) =>
+export const fetchSectionContent = (docId: string, seccion: number, year?: number) =>
   api
     .get<{ doc_id: string; seccion: number; contenido: string }>(
-      `/api/documents/${encodeURIComponent(docId)}/section/${seccion}`
+      `/api/documents/${encodeURIComponent(docId)}/section/${seccion}${year ? `?year=${year}` : ""}`
     )
     .then((r) => r.data);
 
@@ -95,10 +104,17 @@ export const semanticSearch = (payload: {
     .post<SearchResponse>("/api/search/", payload)
     .then((r) => r.data);
 
-export const runAudit = (docId: string) =>
+export const checkAuditExists = (docId: string) =>
+  api
+    .get<{ exists: boolean; created_at: string | null; updated_at: string | null }>(
+      `/api/audit/${encodeURIComponent(docId)}/exists`
+    )
+    .then((r) => r.data);
+
+export const runAudit = (docId: string, force = false) =>
   api
     .post<{ status: string; doc_id: string; message: string }>(
-      `/api/audit/${encodeURIComponent(docId)}`
+      `/api/audit/${encodeURIComponent(docId)}${force ? "?force=true" : ""}`
     )
     .then((r) => r.data);
 

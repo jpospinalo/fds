@@ -21,6 +21,7 @@ class SearchResponse(BaseModel):
 # ── Documentos ────────────────────────────────────────────────────────────────
 class DocumentInfo(BaseModel):
     doc_id: str
+    year: Optional[int] = None
     secciones_disponibles: List[int]
     total_chunks: int
     secciones_estado: Dict[str, str] = {}  # "1"…"16" → "presente"|"incompleta"|"no_presente"
@@ -42,13 +43,20 @@ class AuditSectionResult(BaseModel):
     items: List[AuditItemResult]
     raw_text: str
 
+class AuditChanges(BaseModel):
+    added: List[Dict[str, Any]] = []
+    removed: List[Dict[str, Any]] = []
+    status_changed: List[Dict[str, Any]] = []
+    note: Optional[str] = None
+
 class AuditResponse(BaseModel):
     doc_id: str
     status: str            # "completed" | "running" | "error"
     secciones: List[AuditSectionResult]
     reporte_txt: Optional[str] = None
-    reporte_csv: Optional[str] = None   # ← AÑADIDO: faltaba en la definición original
-    detail: Optional[str] = None        # ← para mensajes de error
+    reporte_csv: Optional[str] = None
+    detail: Optional[str] = None
+    changes: Optional[AuditChanges] = None
 
 # ── Conversión ────────────────────────────────────────────────────────────────
 class ConvertRequest(BaseModel):
