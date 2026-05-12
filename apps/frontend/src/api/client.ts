@@ -187,3 +187,48 @@ export interface MetricsData {
 
 export const fetchMetrics = () =>
   api.get<MetricsData>("/api/metrics/").then((r) => r.data);
+
+// ── Auditoría Masiva ───────────────────────────────────────────────────────────
+
+export interface RateLimitStatus {
+  rpm: { actual: number; limite: number; pct: number };
+  rpd: { actual: number; limite: number; limite_real: number; restante: number; pct: number };
+  tpm: { actual: number; limite: number; pct: number };
+  docs_restantes_hoy: number;
+  nivel: "normal" | "advertencia" | "bloqueado";
+  mensaje: string;
+}
+
+export interface BatchResultItem {
+  doc_id: string;
+  status: "completado" | "error" | "bloqueado";
+  puntaje?: number;
+  motivo?: string;
+}
+
+export interface BatchStatus {
+  running: boolean;
+  stopped: boolean;
+  total: number;
+  completados: number;
+  fallidos: number;
+  omitidos: number;
+  en_curso: string | null;
+  cola: string[];
+  resultados: BatchResultItem[];
+  omitidos_ids: string[];
+  started_at: string | null;
+  rate_limit: RateLimitStatus;
+}
+
+export const startBatch = (doc_ids: string[]) =>
+  api.post<{ status: string; pendientes: number; omitidos: number; mensaje: string }>(
+    "/api/batch/start",
+    { doc_ids }
+  ).then((r) => r.data);
+
+export const getBatchStatus = () =>
+  api.get<BatchStatus>("/api/batch/status").then((r) => r.data);
+
+export const stopBatch = () =>
+  api.post<{ status: string; mensaje: string }>("/api/batch/stop").then((r) => r.data);

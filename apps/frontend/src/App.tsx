@@ -5,12 +5,14 @@ import Audit from "./pages/Audit";
 import Convert from "./pages/Convert";
 import Upload from "./pages/Upload";
 import Metrics from "./pages/Metrics";
+import Massive from "./pages/Massive";
 import "./index.css";
 
 const NAV = [
   { to: "/", label: "Documentos", exact: true },
   { to: "/search", label: "Búsqueda" },
   { to: "/audit", label: "Auditoría" },
+  { to: "/massive", label: "Masivo" },
   { to: "/convert", label: "TXT → MD" },
   { to: "/upload", label: "Subir PDF" },
   { to: "/metrics", label: "Métricas" },
@@ -106,6 +108,7 @@ export default function App() {
             <Route path="/audit" element={<Audit />} />
             <Route path="/convert" element={<Convert />} />
             <Route path="/upload" element={<Upload />} />
+            <Route path="/massive" element={<Massive />} />
             <Route path="/metrics" element={<Metrics />} />
           </Routes>
         </main>

@@ -7,6 +7,7 @@ from langchain_core.prompts import PromptTemplate
 
 from api_backend.config import Config
 from api_backend.rag_engine.retriever import buscar_contexto
+from api_backend import rate_limiter
 
 # ==========================================
 # 1. CONFIGURACIÓN DEL JUEZ (LLM)
@@ -96,21 +97,33 @@ def inspeccionar_documento_texto(doc_id: str):
         texto_evidencia = "\n\n".join([f['texto'] for f in fragmentos])
         
         try:
-            print("   Esperando 10 segundos por límite de API...")
-            time.sleep(25)
-            
+            rate_limiter.wait_if_needed()
+
             respuesta = cadena_inspeccion.invoke({
                 "num_seccion": num_seccion,
                 "rubrica": lista_requerimientos,
                 "texto_fds": texto_evidencia
             })
-            
+
+            # Registrar consumo de tokens si el modelo los reporta
+            tokens = 0
+            try:
+                meta = getattr(respuesta, "usage_metadata", None) or {}
+                tokens = (
+                    getattr(meta, "total_tokens", 0)
+                    or getattr(meta, "total_token_count", 0)
+                    or (meta.get("total_token_count", 0) if isinstance(meta, dict) else 0)
+                )
+            except Exception:
+                pass
+            rate_limiter.record_call(int(tokens))
+
             # Manejo robusto de la salida
             if isinstance(respuesta.content, list):
                 veredicto = "".join([bloque.get("text", "") for bloque in respuesta.content if isinstance(bloque, dict)])
             else:
                 veredicto = str(respuesta.content)
-                
+
             resultados_totales[f"Seccion_{num_seccion}"] = veredicto.strip()
             print(f"   Checklist Sección {num_seccion} completado.")
             
