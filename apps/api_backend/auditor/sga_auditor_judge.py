@@ -1,7 +1,6 @@
 import os
 import time
 from pathlib import Path
-
 import pandas as pd
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_core.prompts import PromptTemplate
@@ -43,6 +42,9 @@ PROMPT_INSPECTOR = PromptTemplate.from_template(
     """
 )
 
+# Secciones objetivo (Solo texto)
+SECCIONES_OBJETIVO = [1, 3, 9, 10]
+
 # ==========================================
 # 2. MOTOR DE AUDITORÍA AUTOMATIZADA
 # ==========================================
@@ -51,8 +53,7 @@ def inspeccionar_documento_texto(doc_id: str):
     print(f" INICIANDO CHECKLIST SGA (SOLO TEXTO): {doc_id}")
     print(f"==================================================\n")
     
-    # Secciones objetivo (Solo texto)
-    SECCIONES_OBJETIVO = [1, 3, 4, 5, 6, 9]
+
     
     llm_inspector = obtener_llm_inspector()
     cadena_inspeccion = PROMPT_INSPECTOR | llm_inspector

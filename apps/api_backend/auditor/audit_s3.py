@@ -2,14 +2,14 @@ import hashlib
 import json
 import logging
 from datetime import datetime, timezone
-
+from api_backend.auditor.sga_auditor_judge import SECCIONES_OBJETIVO
 import boto3
 
 from api_backend.config import Config
 
 logger = logging.getLogger(__name__)
 
-SECCIONES_AUDITADAS = [1, 3, 4, 5, 6, 9]
+SECCIONES_AUDITADAS = SECCIONES_OBJETIVO
 
 
 def _s3_client():

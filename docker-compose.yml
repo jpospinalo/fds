@@ -44,18 +44,3 @@ services:
     depends_on:
       - api_backend
     restart: unless-stopped
-
-  # ==========================================
-  # 3. Base de Datos Vectorial (ChromaDB) - Opcional
-  # ==========================================
-  # chromadb_local:
-  #   image: chromadb/chroma:latest
-  #   container_name: rag_fds_chroma
-  #   ports:
-  #     - "4000:8000"
-  #   volumes:
-  #     - chroma_data:/chroma/chroma
-  #   restart: unless-stopped
-
-# volumes:
-#   chroma_data:
