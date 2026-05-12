@@ -6,7 +6,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 # CORRECCIÓN: se eliminó la línea duplicada de imports
-from api_backend.routers import documents, search, audit, convert, pipeline
+from api_backend.routers import documents, search, audit, convert, pipeline, metrics
 from api_backend.config import Config
 
 # Agregar raíz del proyecto al path
@@ -38,6 +38,7 @@ app.include_router(search.router, prefix=API_PREFIX)
 app.include_router(audit.router, prefix=API_PREFIX)
 app.include_router(convert.router, prefix=API_PREFIX)
 app.include_router(pipeline.router)  # pipeline ya tiene su propio prefix="/pipeline"
+app.include_router(metrics.router, prefix=API_PREFIX)
 
 
 @app.get(f"{API_PREFIX}/health", tags=["Estado"])

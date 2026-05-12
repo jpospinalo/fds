@@ -73,3 +73,20 @@ def get_meta(doc_id: str) -> dict | None:
     if row is None:
         return None
     return {"created_at": row[0], "updated_at": row[1], "source_hash": row[2]}
+
+
+def get_all() -> list[dict]:
+    with _connect() as conn:
+        rows = conn.execute(
+            "SELECT doc_id, created_at, updated_at, source_hash, results_json FROM audits"
+        ).fetchall()
+    return [
+        {
+            "doc_id": r[0],
+            "created_at": r[1],
+            "updated_at": r[2],
+            "source_hash": r[3],
+            "results": json.loads(r[4]),
+        }
+        for r in rows
+    ]

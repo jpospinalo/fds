@@ -147,3 +147,43 @@ export const getJobStatus = (jobId: string) =>
   api
     .get<PipelineJob>(`/pipeline/${jobId}/status`)
     .then((r) => r.data);
+
+export interface MetricsSectionData {
+  seccion: number;
+  nombre: string;
+  puntaje_promedio: number | null;
+  tasa_presencia: number | null;
+  docs_auditados: number;
+}
+
+export interface MetricsData {
+  generated_at: string;
+  resumen: {
+    total_auditados: number;
+    con_error: number;
+    corriendo: number;
+  };
+  calidad: {
+    puntaje_promedio_global: number | null;
+    tasa_presencia_global: number | null;
+    items_presentes: number;
+    items_ausentes: number;
+    total_items: number;
+  };
+  por_seccion: MetricsSectionData[];
+  documentos_recientes: Array<{
+    doc_id: string;
+    created_at: string;
+    updated_at: string | null;
+    puntaje_global: number | null;
+  }>;
+  items_mas_ausentes: Array<{
+    item: string;
+    ausencias: number;
+    total: number;
+    tasa_ausencia: number;
+  }>;
+}
+
+export const fetchMetrics = () =>
+  api.get<MetricsData>("/api/metrics/").then((r) => r.data);
